@@ -1,0 +1,308 @@
+from flask import Flask,redirect,url_for,render_template,request, session
+from forms import *
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+import httpx
+import csv
+
+
+app=Flask(__name__)
+app.config['SECRET_KEY'] = '5791628basdfsabca32242sdfsfde280ba245'
+app.config['SQLALCHEMY_DATABASE_URI']='sqlite:///test.db'
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+
+class Room(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    block = db.Column(db.String(), nullable=True)
+    number = db.Column(db.Integer(), nullable=True)
+    maxOccupancy = db.Column(db.Integer(), nullable = True)
+    occupancyStatus = db.Column(db.String(), nullable = True)
+    occupants = db.Column(db.Integer(), nullable = True)
+    bedsAvailable = db.Column(db.Integer(), nullable = True)
+    floor = db.Column(db.String(), nullable = True)
+    tier = db.Column(db.String(), nullable = True)
+    price = db.Column(db.Float(), nullable = True)
+    roomtype = db.Column(db.String(), nullable = True)
+    slots = db.Column(db.Integer(), nullable = True)
+    space = db.Column(db.Boolean(), default=False)
+
+    # user = db.Column(db.Integer, db.ForeignKey('user.id', ondelete="CASCADE"), nullable=False)
+
+def __repr__(self): 
+    return f"Block('{self.number}', Room('{self.number}', Occupancy- '{self.occupancyStatus}', )"
+
+
+class RoomType(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(), nullable=True)
+    range = db.Column(db.String(), nullable=True)
+    basic = db.Column(db.Float(), nullable=True)
+    premium = db.Column(db.Float(), nullable=True)
+    space = db.Column(db.Boolean(), default=True)
+    # user = db.Column(db.Integer, db.ForeignKey('user.id', ondelete="CASCADE"), nullable=False)
+
+def __repr__(self): 
+    return f"Room Type('{self.name}', Space('{self.space}', )"
+
+class Blocks(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    block = db.Column(db.String(), nullable=True)
+    name = db.Column(db.String(), nullable=True)
+    # user = db.Column(db.Integer, db.ForeignKey('user.id', ondelete="CASCADE"), nullable=False)
+
+def __repr__(self): 
+    return f"Blocks ('{self.name}', Space('{self.space}', )"
+
+
+class RoomLocation(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    floor = db.Column(db.String(), nullable=True)
+    location = db.Column(db.String(), nullable=True)
+    # user = db.Column(db.Integer, db.ForeignKey('user.id', ondelete="CASCADE"), nullable=False)
+
+def __repr__(self): 
+    return f"Room Type('{self.name}', Space('{self.space}', )"
+
+class Occupant(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(), nullable=True)
+    studentId = db.Column(db.String(), nullable=True)
+    phone = db.Column(db.String(), nullable=True)
+    course = db.Column(db.String(), nullable=True)
+    level = db.Column(db.String(), nullable=True)
+    room = db.Column(db.String(), nullable=True)
+    block = db.Column(db.String(), nullable=True)
+    roomnumber = db.Column(db.String(), nullable=True)
+    roomid = db.Column(db.String(), nullable=True)
+    paid = db.Column(db.String(), nullable=True)
+
+def __repr__(self): 
+    return f"Occupant('{self.name}', Room('{self.roomnumber}', Paid- '{self.occupancyStatus}', )"
+
+@app.route('/roomtype', methods=['GET', 'POST'])
+def roomtype():
+    roomtype = RoomType.query.all()
+    return render_template('roomtype.html', roomtype=roomtype)
+
+# @app.route('/blocks/<string:roomtype>', methods=['GET', 'POST'])
+# def blocks(roomtype):
+#     print(roomtype)
+#     roomtype = RoomLocation.query.all()
+#     return render_template('location.html', roomtype=roomtype)
+
+@app.route('/location/<string:roomtype>', methods=['GET', 'POST'])
+def location(roomtype):
+    print(roomtype)
+    session["roomtype"] = roomtype
+    roomtype = RoomLocation.query.all()
+    return render_template('location.html', roomtype=roomtype)
+
+@app.route('/rooms/<string:id>', methods=['GET', 'POST'])
+def rooms(id):
+    block = id
+
+    session["roomlocation"] = id
+
+    floor = RoomLocation.query.get_or_404(id)
+
+    print("floor")
+    floor = floor.location
+
+    roomtype = session['roomtype']
+    print(roomtype)
+
+    # allrooms = Room.query.filter_by(block=block).order_by(Room.number.asc()).all()
+    allrooms = Room.query.filter_by(maxOccupancy = roomtype, floor= floor).all()
+    # allrooms = Room.query.all()
+    print(allrooms)
+    return render_template('rooms.html', rooms=allrooms, block=block)
+
+@app.route('/blocks', methods=['GET', 'POST'])
+def block():
+    allbocks = Blocks.query.all()
+    return render_template('blocks.html', blocks = allbocks)
+
+@app.route('/',methods=['GET','POST'])
+def pronto():
+    form=Booking()
+
+    if request.method=='POST':
+        if form.validate_on_submit():
+            newOccupant = Occupant(
+                name = form.name.data,
+                phone = form.phone.data,
+                # studentId = form.studentid.data,
+                course = form.course.data,
+                level = form.level.data,
+            )
+
+            db.session.add(newOccupant)
+            db.session.commit()
+            session['occupantId'] = newOccupant.id
+
+        
+            return redirect(url_for('roomtype' ))
+        
+        else:
+            print(form.errors)
+        return render_template('pronto.html', form=form)
+    return render_template('pronto.html', form=form)
+
+
+@app.route('/extractDatacsv', methods=['GET', 'POST'])
+def extractDatacsv():
+    with open('Documents/ROOMS.csv', newline='') as csvfile:
+        csv_reader = csv.DictReader(csvfile)
+
+        csvData = []
+
+        for r in Room.query.all():
+            db.session.delete(r)
+            db.session.commit()
+
+
+        for row in csv_reader:
+            print(row)
+            csvData.append(row)
+            newRoom = Room(block=row["BLOCK"], floor=row["FLOOR"], number=row["ROOM_NUMBER"], roomtype=row["ROOM_TYPE"], maxOccupancy=row["MAX_OCCUPANCY"], occupants=row["OCCUPANTS"], price=row["PRICE"], bedsAvailable=row["BEDS_AVAILABLE"], tier = row["TIER"] )
+            db.session.add(newRoom)
+        
+        db.session.commit()
+
+        return csvData
+    
+
+@app.route('/extractroomtypecsv', methods=['GET', 'POST'])
+def extractroomtypecsv():
+    with open('Documents/ROOM_TYPE.csv', newline='') as csvfile:
+        csv_reader = csv.DictReader(csvfile)
+
+        csvData = []
+
+        for row in csv_reader:
+            print(row)
+            csvData.append(row)
+            newRoom = RoomType(name=row["ROOM_TYPE"], range=row["PRICE_RANGE"], basic=row["BASIC"], premium=row["PREMIUM"] )
+            db.session.add(newRoom)
+        
+        db.session.commit()
+
+        return csvData
+    
+
+
+@app.route('/extractroomlocationcsv', methods=['GET', 'POST'])
+def extractroomlocationcsv():
+    with open('Documents/ROOM_LOCATION.csv', newline='') as csvfile:
+        csv_reader = csv.DictReader(csvfile)
+
+        csvData = []
+
+        for row in csv_reader:
+            print(row)
+            csvData.append(row)
+            newRoom = RoomLocation(floor=row["FLOOR"], location=row["ROOM_LOCATION"])
+            db.session.add(newRoom)
+        
+        db.session.commit()
+
+        return csvData
+    
+
+    
+@app.route('/route_name', methods=['GET', 'POST'])
+def extractCsv(filename):
+     with open(filename, 'r') as csv_file:
+        csv_reader = csv.DictReader(csv_file)
+
+        for line in csv_reader:
+            number = line['number']
+
+            id = id.split('-')[0]
+            if status == 'paid' and len(id) <= 3:
+                amount = line['amount']
+
+                print(str(id) + " - " + amount)
+            
+                # find candidate and add amount to votes ... 
+                candidate = Candidates.query.get_or_404(id)
+                candidate.votes += float(amount)
+                print(str(id) + " - " + amount)
+
+        db.session.commit()
+        all = []
+        candidates = Candidates.query.all()
+        for candidate in candidates:
+            candidate = {
+                candidate.name:candidate.votes
+            }
+            all.append(candidate) 
+        return make_response(all)
+
+
+@app.route('/new',methods=['GET','POST'])
+def new():
+    form=NewRegistration()
+    if request.method=='POST':
+        # Handle POST Request here
+        return render_template('new.html')
+    return render_template('new.html', form=form)
+
+@app.route('/payment/<string:id>', methods=['GET', 'POST'])
+def payment(id):
+    form=PaymentForm()
+    print(id)
+    occupant = Occupant.query.get_or_404(session['occupantId'])
+    if request.method == 'POST':
+        if form.validate_on_submit:
+            print("validated")
+            paymentUrl = "https://sandbox.prestoghana.com/korba"
+            paymentInfo = {
+                    "appId":"prontohostel",
+                    "ref":form.name.data,
+                    "reference":form.id.data,
+                    "paymentId":form.id.data, 
+                    "phone":"0"+form.phone.data[-9:],
+                    "amount":form.amount.data,
+                    "total":form.amount.data, #TODO:CHANGE THIS!
+                    "recipient":"external", #TODO:Change!
+                    "percentage":"5",
+                    "callbackUrl":paymentUrl+"/notify/",#TODO: UPDATE THIS VALUE
+                    "firstName":form.name.data,
+                    "network":form.network.data,
+                }
+            r = httpx.post(paymentUrl, json=paymentInfo)
+            print(r)
+        else:
+            print(form.errors)
+            
+    else:
+        print("This is a get request")
+        form.name.data = occupant.name
+        form.phone.data = occupant.phone
+    return render_template('payment.html', form=form, occupant=occupant)
+
+
+# @app.route('/route_name', methods=['GET', 'POST'])
+# def method_name():
+#        paymentInfo = {
+#             "appId":"pronto",
+#             "ref":payment.ref,
+#             "reference":payment.ref,
+#             "paymentId":payment.id, 
+#             "phone":"0"+payment.account[-9:],
+#             "amount":payment.amount,
+#             "total":payment.total,
+#             "recipient":"payment", #TODO:Change!
+#             "percentage":"3",
+#             "callbackUrl":prestoHerokuUrl+"prontoconfirm/"+str(payment.id),#TODO: UPDATE THIS VALUE
+#             "firstName":payment.account,
+#             "network":mobileNetwork,
+#         }
+
+#     r = httpx.post(url, json = paymentInfo)
+
+if __name__ == '__main__':
+    #DEBUG is SET to TRUE. CHANGE FOR PROD
+    app.run(port=5000, host='0.0.0.0', debug=True)
