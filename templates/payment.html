@@ -27,7 +27,7 @@
   
 
   <h3 style="font-size: 16px;"><b>Payment Information</b></h3>
-  <p style="font-size: 16px;">Kindly fill-in this payent form:</p>
+  <p style="font-size: 16px;">Kindly fill-in this payment form:</p>
 
   
   <div class="form-floating mb-3">
@@ -35,20 +35,23 @@
     {{form.name.label}}
   </div>
   <div class="form-floating mb-3">
+    {{form.amount (class="form-control webForm",min=minAmount, max=maxAmount, placeholder="Enter")}}
+    {{form.amount.label}}
+    <h6 class="text-muted" style="font-size: 14px;">GHS {{minAmount}} is the minimum amount you can pay to secure a bed in this room.</h6>
+  </div>
+  <div class="form-floating mb-3">
+    {{form.roomNumber (disabled = True, class="form-control webForm", placeholder="Enter")}}
+    {{form.roomNumber.label}}
+  </div>
+
+  <hr style="color: rgb(192, 192, 192);">
+  <div class="form-floating mb-3">
     {{form.id (class="form-control webForm", placeholder="Enter")}}
     {{form.id.label}}
   </div>
   <div class="form-floating mb-3">
     {{form.network (class="form-control webForm", placeholder="Enter")}}
     {{form.network.label}}
-  </div>
-  <div class="form-floating mb-3">
-    {{form.amount (class="form-control webForm", placeholder="Enter")}}
-    {{form.amount.label}}
-  </div>
-  <div class="form-floating mb-3">
-    {{form.roomNumber (class="form-control webForm", placeholder="Enter")}}
-    {{form.roomNumber.label}}
   </div>
   <div class="form-floating mb-3">
     {{form.phone (class="form-control webForm", placeholder="Enter")}}

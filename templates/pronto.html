@@ -36,6 +36,7 @@
   <div class="form-floating mb-3">
     {{form.studentId (class="form-control webForm", placeholder="Enter")}}
     {{form.studentId.label}}
+    <h6 class="text-muted">If you have not recieved a student id, please enter the id given to you on your admission letter.</h6>
   </div>
   <div class="form-floating mb-3">
     {{form.email (class="form-control webForm", placeholder="Enter")}}
@@ -44,6 +45,8 @@
   <div class="form-floating mb-3">
     {{form.phone (class="form-control webForm", placeholder="Enter")}}
     {{form.phone.label}}
+    <h6 class="text-muted">Please enter the number you are most reachable on.</h6>
+
   </div>
   <div class="form-floating mb-3">
     {{form.course (class="form-control webForm", placeholder="Enter")}}
@@ -55,14 +58,15 @@
   </div>
 
 
-  <h3 style="font-size: 20px;">Reservation Details:</h3>
+  <!-- <h3 style="font-size: 20px;">Reservation Details:</h3> -->
 
   <div class="form-floating mb-3">
     {{form.checkin (class="form-control webForm", placeholder="Enter")}}
     {{form.checkin.label}}
+    <h6 class="text-muted">Please enter the date you intend to occupy the room.</h6>
   </div>
 
-  <h3 style="font-size: 20px;">Contact Details:</h3>
+  <h3 style="font-size: 20px;">Emergency Contact Details:</h3>
 
   <div class="form-floating mb-3">
     {{form.relation (class="form-control webForm", placeholder="Enter")}}
@@ -77,16 +81,9 @@
   <div class="form-floating mb-3">
     {{form.emergencyContact (class="form-control webForm", placeholder="Enter")}}
     {{form.emergencyContact.label}}
+    <h6 class="text-muted">Please enter the number the person is most reachable on.</h6>
   </div>
-  
-  <h3 style="font-size: 20px;">Additional Information:</h3>
 
-  <div class="form-floating mb-3">
-    {{form.special (class="form-control webForm", placeholder="Enter")}}
-    {{form.special.label}}
-  </div> 
-  
-  
 
   <div class="accordion" id="accordionExample">
     <div class="accordion-item">
@@ -167,11 +164,11 @@
                     </ul>
                 </p>
 
-                By checking the box, I admit that I have read and understood the terms and conditions.
+                Please check the box below to complete this section of the form.
             </p>
           <div class="form-group form-check">
             <input type="checkbox" class="form-check-input" id="agreement">
-            <label class="form-check-label" for="agreement"><b>I agree to the terms and conditions</b></label>
+            <label class="form-check-label" for="agreement"><b>I have read, understood and consent to the terms and conditions</b></label>
           </div>
         
         </div>

@@ -3,12 +3,12 @@ from wtforms import StringField, PasswordField, SubmitField, BooleanField, Selec
 from wtforms.validators import DataRequired, Email, Length, EqualTo, ValidationError
 
 class Booking(FlaskForm):
-    name = StringField('Enter Your Name', validators=[DataRequired()])
+    name = StringField('Enter Your Full Name', validators=[DataRequired()])
     phone = StringField('Enter a valid Phone Number', validators=[DataRequired(), Length(min=10, max=10)])
     course = StringField('Course of Study', validators=[DataRequired()])
     email = EmailField('Email', validators=[DataRequired()])
     studentId = StringField('Student Id', validators=[DataRequired()])
-    relation = StringField('Relations', validators=[DataRequired()])
+    relation = StringField('Relationship to emergency contact', validators=[DataRequired()])
     nameOfEmergencyContact = StringField('Name Of Emergency Contact', validators=[DataRequired()])
     emergencyContact = StringField('Emergency Contact', validators=[DataRequired(), Length(min=10, max=10)])
     level = SelectField('Level', choices=[("-Select-", "-Select-"),("100", "100"), ("200", "200"), ("300", "300"),("400", "400"),("500", "500"),("Diploma", "Diploma"),("N/A", "N/A")], validators=[DataRequired()])
@@ -16,7 +16,7 @@ class Booking(FlaskForm):
     # bookingnumber = IntegerField('Number of Bookings', validators=[DataRequired()])
     # room = SelectField('Select Room', choices=[("-Select-", "-Select-"),("One in a Room", "One in a Room"), ("Two in a Room", "Two in a Room"), ("Four in a room", "Four in a room")], validators=[DataRequired()])
     checkin = DateField('Check in Date', format='%Y-%m-%d')
-    special = SelectField('Special Request or Need', choices=[("-Select-", "-Select-"),("Top Bed", "Top Bed"), ("Down Bed", "Down Bed")], validators=[DataRequired()])
+    # special = SelectField('Special Request or Need', choices=[("-Select-", "-Select-"),("Top Bed", "Top Bed"), ("Down Bed", "Down Bed")])
 
     submit = SubmitField('Choose a room')
 
@@ -30,7 +30,7 @@ class NewRegistration(FlaskForm):
     level = IntegerField('Level', validators=[DataRequired()])
     room = SelectField('Select Room', choices=[("-Select-", "-Select-"),("One in a Room", "One in a Room"), ("Two in a Room", "Two in a Room"), ("Four in a room", "Four in a room")], validators=[DataRequired()])
     checkin = DateField('Arrival Date', format='%Y-%m-%d')
-    special = SelectField('Special Request or Need', choices=[("-Select-", "-Select-"),("Top Floor", "Top Floor"), ("Down Bed", "Down Bed"), ("Ground Floor", "Ground Floor")])
+    # special = SelectField('Special Request or Need', choices=[("-Select-", "-Select-"),("Top Floor", "Top Floor"), ("Down Bed", "Down Bed"), ("Ground Floor", "Ground Floor")])
     emergencyname = StringField('Kindly provide an Emergency Contact Name', validators=[DataRequired()])
     emergencyrelationship = StringField('Emergency Relationship', validators=[DataRequired()])
     emergencycontact = IntegerField('Enter Emergency Phone Number', validators=[DataRequired()])
@@ -41,6 +41,6 @@ class PaymentForm(FlaskForm):
     id = IntegerField('Enter Student ID', validators=[DataRequired()])
     network = SelectField('Select your Network', choices=[("-Select-","-Select-"), ("MTN","MTN"), ("VODAFONE","VODAFONE"), ("AIRTELTIGO","AIRTELTIGO")], validators=[DataRequired()])
     amount = IntegerField('Enter Amount', validators=[DataRequired()])
-    roomNumber = IntegerField('Room Number', validators=[DataRequired()])
+    roomNumber = StringField('Room Number', validators=[DataRequired()])
     phone = StringField('Enter Phone Number', validators=[DataRequired()])
-    submit = SubmitField('Submit')
+    submit = SubmitField('Pay Now')

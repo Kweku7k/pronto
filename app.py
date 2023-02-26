@@ -4,6 +4,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 import httpx
 import csv
+import requests
+from datetime import datetime
 
 
 app=Flask(__name__)
@@ -49,6 +51,10 @@ class Blocks(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     block = db.Column(db.String(), nullable=True)
     name = db.Column(db.String(), nullable=True)
+    paid = db.Column(db.Float(), nullable=True, default=0)
+    outstanding = db.Column(db.Float(), nullable=True, default=0)
+    due = db.Column(db.Float(), nullable=True, default=0)
+
     # user = db.Column(db.Integer, db.ForeignKey('user.id', ondelete="CASCADE"), nullable=False)
 
 def __repr__(self): 
@@ -75,7 +81,10 @@ class Occupant(db.Model):
     block = db.Column(db.String(), nullable=True)
     roomnumber = db.Column(db.String(), nullable=True)
     roomid = db.Column(db.String(), nullable=True)
-    paid = db.Column(db.String(), nullable=True)
+    roomCost = db.Column(db.Float(), nullable=True, default=0)
+    amountPaid = db.Column(db.Float(), nullable=True, default=0)
+    due = db.Column(db.Float(), nullable=True)
+    paid = db.Column(db.Boolean(), default=False)
 
 def __repr__(self): 
     return f"Occupant('{self.name}', Room('{self.roomnumber}', Paid- '{self.occupancyStatus}', )"
@@ -91,10 +100,11 @@ def roomtype():
 #     roomtype = RoomLocation.query.all()
 #     return render_template('location.html', roomtype=roomtype)
 
-@app.route('/location/<string:roomtype>', methods=['GET', 'POST'])
-def location(roomtype):
+@app.route('/location/<string:roomtype>/<string:tier>', methods=['GET', 'POST'])
+def location(roomtype, tier):
     print(roomtype)
     session["roomtype"] = roomtype
+    session["roomtier"] = tier
     roomtype = RoomLocation.query.all()
     return render_template('location.html', roomtype=roomtype)
 
@@ -113,15 +123,45 @@ def rooms(id):
     print(roomtype)
 
     # allrooms = Room.query.filter_by(block=block).order_by(Room.number.asc()).all()
-    allrooms = Room.query.filter_by(maxOccupancy = roomtype, floor= floor).all()
+    allrooms = Room.query.filter_by(maxOccupancy = roomtype, floor= floor, price=session["roomtier"]).all()
     # allrooms = Room.query.all()
     print(allrooms)
     return render_template('rooms.html', rooms=allrooms, block=block)
+
+
+@app.route('/allrooms/<string:id>', methods=['GET', 'POST'])
+def allrooms(id):
+    block = id
+    session["roomlocation"] = id
+    allrooms = Room.query.filter_by(block=block).all()
+    print(allrooms)
+    return render_template('allrooms.html', rooms=allrooms, block=block)
 
 @app.route('/blocks', methods=['GET', 'POST'])
 def block():
     allbocks = Blocks.query.all()
     return render_template('blocks.html', blocks = allbocks)
+
+@app.route('/occupants', methods=['GET', 'POST'])
+def occupants():
+    alloccupants = Occupant.query.order_by(Occupant.id.desc()).all()
+    return render_template("occupants.html", alloccupants = alloccupants)
+
+
+def sendRancardMessage(phone,message):
+    url = "https://unify-base.rancard.com/api/v2/sms/public/sendMessage"
+    message = {
+        "apiKey": "dGFsYW5rdTpUYWxhbmt1Q3U6MTY1OkFQSWtkczAxNDI0Nzg1NDU=",
+        "contacts": [phone],
+        "message": message,
+        "scheduled": False,
+        "hasPlaceholders": False,
+        "senderId": "Pronto"
+    }
+    r = requests.post(url, json=message)
+    print(r.text)
+    return r.text
+
 
 @app.route('/',methods=['GET','POST'])
 def pronto():
@@ -253,36 +293,122 @@ def new():
 def payment(id):
     form=PaymentForm()
     print(id)
+    session["roomnumber"] = id
+    form.roomNumber.data = "Block " + session["roomlocation"] + "Room "+ session["roomnumber"]
     occupant = Occupant.query.get_or_404(session['occupantId'])
+    room = Room.query.get_or_404(id)
+    
+    try:
+        occupant.roomCost = float(room.price)
+        db.session.commit()
+    except Exception as e:  
+        print(e)
+
+
     if request.method == 'POST':
         if form.validate_on_submit:
             print("validated")
+            baseUrl = "https://sandbox.prestoghana.com"
             paymentUrl = "https://sandbox.prestoghana.com/korba"
+            min = float(room.price)*0.60
             paymentInfo = {
                     "appId":"prontohostel",
                     "ref":form.name.data,
-                    "reference":form.id.data,
+                    "reference":str(form.id.data),
+                    "description":str(form.id.data),
                     "paymentId":form.id.data, 
-                    "phone":"0"+form.phone.data[-9:],
+                    "phone":"0"+str(form.phone.data[-9:]),
                     "amount":form.amount.data,
-                    "total":form.amount.data, #TODO:CHANGE THIS!
+                    "total":str(form.amount.data), #TODO:CHANGE THIS!
                     "recipient":"external", #TODO:Change!
                     "percentage":"5",
-                    "callbackUrl":paymentUrl+"/notify/",#TODO: UPDATE THIS VALUE
+                    "callbackUrl":baseUrl+"/notify/",#TODO: UPDATE THIS VALUE
                     "firstName":form.name.data,
                     "network":form.network.data,
                 }
+     
             r = httpx.post(paymentUrl, json=paymentInfo)
             print(r)
+
+            sendsms(str(paymentInfo["paymentId"]), paymentInfo["firstName"],paymentInfo["description"], "web", paymentInfo["phone"], )
+            updateOccupant(paymentInfo["amount"], occupant)
+            return "Done!"
         else:
             print(form.errors)
             
     else:
+        room = Room.query.get_or_404(id)
+        print(room.price)
+        min = float(room.price)*0.60
         print("This is a get request")
+
+        occupant = Occupant.query.get_or_404(session["occupantId"])
+        occupant.room = room.number
+        occupant.block = room.block
+        db.session.commit()
+
         form.name.data = occupant.name
         form.phone.data = occupant.phone
-    return render_template('payment.html', form=form, occupant=occupant)
+        form.amount.data = min
+        form.roomNumber.data ="Block " + room.block +" Room " +str(room.number)
+    return render_template('payment.html', form=form, occupant=occupant, minAmount=min, maxAmount=room.price)
 
+
+def updateOccupant(amount, occupant):
+    occupant.amountPaid += amount
+    amountBalance = occupant.roomCost - float(amount)
+    occupant.due = amountBalance
+    db.session.commit()
+    return occupant
+# -------------- ADMIN -----------
+
+@app.route('/dashboard', methods=['GET', 'POST'])
+def dashboard():
+    occupants = Occupant.query.all()
+    paid = 0
+    due = 0
+    for o in occupants:
+        if o.amountPaid:
+            paid +=  o.amountPaid 
+        if o.due:
+            due += o.due
+
+    amountOutstanding =  paid - due
+    
+    return render_template('dashboard.html', outstanding=amountOutstanding, paid=paid, due=due, tenants="6000")
+
+@app.route('/allblocks/<string:id>', methods=['GET', 'POST'])
+@app.route('/allblocks', methods=['GET', 'POST'])
+def allblocks(id="0"):
+    print(id)
+    blocks = Blocks.query.all()
+    filterDict = {
+        "0":"All",
+        "1":"outstanding",
+        "2":"due",
+        "3":"paid"
+    }
+    print(filterDict[id])
+    return render_template('allblocks.html', blocks=blocks, filter=filterDict[id])
+
+@app.route('/adminblock/<int:id>', methods=['GET', 'POST'])
+def adminblock(id):
+    occupants = Occupant.query.filter_by(block = id).all()
+    print(occupants)
+    return render_template('adminoccupants.html', alloccupants=occupants)
+
+@app.route('/master', methods=['GET', 'POST'])
+def master():
+
+    return render_template('master.html')
+
+@app.route('/sendsms', methods=['GET', 'POST'])
+def sendsms(recieptNumber, guestName, bookingReference, paymentMethod, phone):
+
+    message = "Receipt Number:" +recieptNumber + "\n Date: "+ datetime.utcnow().strftime('%c') + "\nGuest Name:" + guestName + "\nBooking Reference: " + bookingReference + "\nPayment Method: " + paymentMethod + "\nReview occupancy terms and conditions here. \nDial *192*456*908# and use your booking reference to make future payments during your occupancy term. \nThank you for choosing Pronto Hostels. We hope you have a great stay with us!"
+    r = sendRancardMessage(phone ,message)
+    print(r)
+    return "r"
 
 # @app.route('/route_name', methods=['GET', 'POST'])
 # def method_name():
