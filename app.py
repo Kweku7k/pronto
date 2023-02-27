@@ -311,6 +311,8 @@ def payment(id):
             baseUrl = "https://sandbox.prestoghana.com"
             paymentUrl = "https://sandbox.prestoghana.com/korba"
             min = float(room.price)*0.60
+            if form.amount.data == None:
+                form.amount.data = min
             paymentInfo = {
                     "appId":"prontohostel",
                     "ref":form.name.data,

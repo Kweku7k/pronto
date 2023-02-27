@@ -39,7 +39,7 @@ class NewRegistration(FlaskForm):
 class PaymentForm(FlaskForm):
     name = StringField('Enter your Full Name', validators=[DataRequired()])
     id = IntegerField('Enter Student ID', validators=[DataRequired()])
-    network = SelectField('Select your Network', choices=[("-Select-","-Select-"), ("MTN","MTN"), ("VODAFONE","VODAFONE"), ("AIRTELTIGO","AIRTELTIGO")], validators=[DataRequired()])
+    network = SelectField('Select your Network', choices=[("MTN","MTN"), ("VODAFONE","VODAFONE"), ("AIRTELTIGO","AIRTELTIGO")], validators=[DataRequired()])
     amount = IntegerField('Enter Amount', validators=[DataRequired()])
     roomNumber = StringField('Room Number', validators=[DataRequired()])
     phone = StringField('Enter Phone Number', validators=[DataRequired()])
