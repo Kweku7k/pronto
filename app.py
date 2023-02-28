@@ -359,12 +359,40 @@ def payment(id):
 
 
 def updateOccupant(amount, occupant):
-    occupant.amountPaid += amount
     amountBalance = occupant.roomCost - float(amount)
+
+    block = Blocks.query.get_or_404(occupant.block)
+    block.paid += amount
+    
+    # Room cost - amount paid
+
+    # Current balance + amount paid
+    occupant.amountPaid += amount
     occupant.due = amountBalance
+    outstanding = occupant.roomCost - amount
+
+    
+    block.due += occupant.roomCost
+    block.outstanding += outstanding
+    
     db.session.commit()
+
     return occupant
 # -------------- ADMIN -----------
+
+@app.route('/resetDashboard', methods=['GET', 'POST'])
+def resetDashboard():
+    for b in Blocks.query.all():
+        b.paid = 0
+        b.outstanding = 0
+        b.due = 0
+    
+    for o in Occupant.query.all():
+        db.session.delete(o)
+
+    db.session.commit()
+
+    return "Done!"
 
 @app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
@@ -375,9 +403,9 @@ def dashboard():
         if o.amountPaid:
             paid +=  o.amountPaid 
         if o.due:
-            due += o.due
+            due += o.roomCost
 
-    amountOutstanding =  paid - due
+    amountOutstanding =  due - paid
     
     return render_template('dashboard.html', outstanding=amountOutstanding, paid=paid, due=due, tenants="6000")
 
