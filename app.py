@@ -163,7 +163,7 @@ def sendRancardMessage(phone,message):
     return r.text
 
 
-@app.route('/',methods=['GET','POST'])
+@app.route('/form',methods=['GET','POST'])
 def pronto():
     form=Booking()
 
@@ -279,6 +279,8 @@ def extractCsv(filename):
             }
             all.append(candidate) 
         return make_response(all)
+
+
 
 
 @app.route('/new',methods=['GET','POST'])
@@ -403,6 +405,17 @@ def adminblock(id):
 def master():
 
     return render_template('master.html')
+
+
+@app.route('/', methods=['GET', 'POST'])
+def home():
+
+    return render_template('home.html')
+
+@app.route('/viewrooms', methods=['GET', 'POST'])
+def viewrooms():
+
+    return render_template('viewrooms.html')
 
 @app.route('/sendsms', methods=['GET', 'POST'])
 def sendsms(recieptNumber, guestName, bookingReference, paymentMethod, phone):
