@@ -412,6 +412,11 @@ def home():
 
     return render_template('home.html')
 
+@app.route('/details', methods=['GET', 'POST'])
+def details():
+
+    return render_template('details.html')
+
 @app.route('/viewrooms', methods=['GET', 'POST'])
 def viewrooms():
 

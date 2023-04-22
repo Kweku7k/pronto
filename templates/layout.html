@@ -6,6 +6,7 @@
   <!-- Required meta tags -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link href="{{url_for("static", filename="img/logo.png")}}" rel="icon">
 
   <link rel="stylesheet" href="{{url_for("static", filename="css/style.css")}}">
 
@@ -14,33 +15,48 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
 
+  <script src="https://kit.fontawesome.com/dbed6b6114.js" crossorigin="anonymous"></script>
+
+  <!-- Vendor CSS Files -->
+  <!-- <link href="assets/vendor/aos/aos.css" rel="stylesheet"> -->
+  <link href="{{url_for("static", filename="vendor/aos/aos.css")}}" rel="stylesheet">
+  <link href="{{url_for("static", filename="vendor/bootstrap/css/bootstrap.min.css")}}" rel="stylesheet">
+  <link href="{{url_for("static", filename="vendor/bootstrap-icons/bootstrap-icons.css")}}" rel="stylesheet">
+  <link href="{{url_for("static", filename="vendor/boxicons/css/boxicons.min.css")}}" rel="stylesheet">
+  <link href="{{url_for("static", filename="vendor/glightbox/css/glightbox.min.css")}}" rel="stylesheet">
+  <link href="{{url_for("static", filename="vendor/remixicon/remixicon.css")}}" rel="stylesheet">
+  <link href="{{url_for("static", filename="vendor/swiper/swiper-bundle.min.css")}}" rel="stylesheet">
 </head>
 
 <body> 
  
   <nav style="margin: auto 3vh;" class="navbar navbar-expand-lg navbar-light bg-transparent">
     <div class="container">
-
-      <a class="navbar-brand d-flex" href="#">
-        <img src="../static/img/logo.png" alt="Logo" width="50" height="40" class="d-inline-block align-text-top">
-        <h5 style="padding: 5px 0 0 5px; color: #243c4f;">Pronto Hostels</h5>
-      </a>
+      <div class="">
+        <a class="navbar-brand d-flex" href="/" >
+          <img src="../static/img/logo.png" alt="Logo" width="50" height="40" class="d-inline-block align-text-top">
+          <h5 style="padding: 5px 0 0 5px; text-align: center; color: #243c4f;">Pronto Hostels</h5>
+        </a>
+      </div>
+      
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="">
         <span class="navbar-text" style="margin-left: auto;">
-          <!-- <ul class="navbar-nav ml-auto" style="margin-left: auto;">
-            <li class="nav-item active">
-              <a class="nav-link" href="#">Home</a>
-            </li>
-            <li class="nav-item">
+          <ul class="navbar-nav ml-auto" style="margin-left: auto;">
+            <a href="/#">
+              <button class="pill-button" style="color: #fff; background: #235784; padding: 12px 15px;">
+                Book a Room
+              </button>
+            </a>
+            <!-- <li class="nav-item">
               <a class="nav-link" href="#">About Us</a>
             </li>
             <li style="margin-top: auto; margin-bottom: auto;">
               <button class="pill-button">Contact Us</button>
-            </li>
-          </ul> -->
+            </li> -->
+          </ul>
         </span>
       </div>
     </div>
@@ -116,6 +132,18 @@
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"
     integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3" crossorigin="anonymous">
   </script>
+
+
+<script src="{{url_for("static", filename="vendor/purecounter/purecounter_vanilla.js")}}"></script>
+<script src="{{url_for("static", filename="vendor/aos/aos.js")}}"></script>
+<script src="{{url_for("static", filename="vendor/bootstrap/js/bootstrap.bundle.min.js")}}"></script>
+<script src="{{url_for("static", filename="vendor/glightbox/js/glightbox.min.js")}}"></script>
+<script src="{{url_for("static", filename="vendor/isotope-layout/isotope.pkgd.min.js")}}"></script>
+<script src="{{url_for("static", filename="vendor/swiper/swiper-bundle.min.js")}}"></script>
+<script src="{{url_for("static", filename="vendor/php-email-form/validate.js")}}"></script>
+
+<script src="{{url_for("static", filename="js/main.js")}}"></script>
+
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.min.js"
     integrity="sha384-7VPbUDkoPSGFnVtYi0QogXtr74QeVeeIs99Qfg5YCF+TidwNdjvaKZX19NZ/e6oz" crossorigin="anonymous">
