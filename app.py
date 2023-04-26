@@ -414,13 +414,21 @@ def home():
 
 @app.route('/details', methods=['GET', 'POST'])
 def details():
-
-    return render_template('details.html')
+    form=DetailsForm()
+    if request.method=='POST':
+        # Handle POST Request here
+        return render_template('details.html')
+    return render_template('details.html', form=form)
 
 @app.route('/viewrooms', methods=['GET', 'POST'])
 def viewrooms():
 
     return render_template('viewrooms.html')
+
+@app.route('/faq', methods=['GET', 'POST'])
+def faq():
+
+    return render_template('faq.html')
 
 @app.route('/sendsms', methods=['GET', 'POST'])
 def sendsms(recieptNumber, guestName, bookingReference, paymentMethod, phone):

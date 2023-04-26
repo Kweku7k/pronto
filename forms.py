@@ -44,3 +44,8 @@ class PaymentForm(FlaskForm):
     roomNumber = StringField('Room Number', validators=[DataRequired()])
     phone = StringField('Enter Phone Number', validators=[DataRequired()])
     submit = SubmitField('Pay Now')
+
+class DetailsForm(FlaskForm):
+    checkin = DateField('Arrival Date', format='%Y-%m-%d')
+    location = SelectField('Room Location', choices=[("-Select-", "-Select-"),("First Floor", "First Floor"), ("Second Floor", "Second Floor"), ("Ground Floor", "Ground Floor")])
+    submit = SubmitField('Book Now')
