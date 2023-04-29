@@ -1,10 +1,12 @@
 from flask import Flask,redirect,url_for,render_template,request, session
+import urllib3
 from forms import *
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 import httpx
 import csv
 import requests
+import urllib.request, urllib.parse
 from datetime import datetime
 
 
@@ -123,7 +125,7 @@ def rooms(id):
     print(roomtype)
 
     # allrooms = Room.query.filter_by(block=block).order_by(Room.number.asc()).all()
-    allrooms = Room.query.filter_by(maxOccupancy = roomtype, floor= floor, price=session["roomtier"]).all()
+    allrooms = Room.query.filter_by(maxOccupancy = roomtype, floor= floor, price=session["roomtier"], space=True).all()
     # allrooms = Room.query.all()
     print(allrooms)
     return render_template('rooms.html', rooms=allrooms, block=block)
@@ -205,7 +207,7 @@ def extractDatacsv():
         for row in csv_reader:
             print(row)
             csvData.append(row)
-            newRoom = Room(block=row["BLOCK"], floor=row["FLOOR"], number=row["ROOM_NUMBER"], roomtype=row["ROOM_TYPE"], maxOccupancy=row["MAX_OCCUPANCY"], occupants=row["OCCUPANTS"], price=row["PRICE"], bedsAvailable=row["BEDS_AVAILABLE"], tier = row["TIER"] )
+            newRoom = Room(block=row["BLOCK"], floor=row["FLOOR"], number=row["ROOM_NUMBER"], roomtype=row["ROOM_TYPE"], maxOccupancy=row["MAX_OCCUPANCY"], occupants=row["OCCUPANTS"], price=row["PRICE"], bedsAvailable=row["MAX_OCCUPANCY"], tier = row["TIER"], space=True )
             db.session.add(newRoom)
         
         db.session.commit()
@@ -302,6 +304,7 @@ def payment(id):
     
     try:
         occupant.roomCost = float(room.price)
+        occupant.roomid = room.id
         db.session.commit()
     except Exception as e:  
         print(e)
@@ -359,24 +362,38 @@ def payment(id):
 
 
 def updateOccupant(amount, occupant):
-    amountBalance = occupant.roomCost - float(amount)
+    # update balance
+    amountBalance = occupant.roomCost - float(amount) #6000 - 3000 = 3000
+    # update block 
+    block = Blocks.query.get_or_404(occupant.block) #find Block
+    block.paid += amount #Update amount paid per block
 
-    block = Blocks.query.get_or_404(occupant.block)
-    block.paid += amount
+    # update room
+    # update 
     
     # Room cost - amount paid
-
+    
     # Current balance + amount paid
     occupant.amountPaid += amount
-    occupant.due = amountBalance
+    occupant.due = amountBalance #wrong
     outstanding = occupant.roomCost - amount
-
     
     block.due += occupant.roomCost
     block.outstanding += outstanding
+
+    # set room to hidden if full
+    room =  Room.query.get_or_404(occupant.roomid)
+    room.occupants += 1
+    room.bedsAvailable -= 1
     
     db.session.commit()
 
+    if room.bedsAvailable <= 0:
+        room.space = False
+        db.session.commit()
+
+    sendTelegram("Block " + str(room.block)+ " Room " + str(room.number) + "has been purchased successfully by "+ str(occupant.name)+ " " + str(occupant.phone)+ ".\nAmount Paid "+ str(amount) + "\nRemaining Beds: "+ str(room.bedsAvailable))
+    
     return occupant
 # -------------- ADMIN -----------
 
@@ -397,6 +414,7 @@ def resetDashboard():
 @app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
     occupants = Occupant.query.all()
+    totalOccupants = Occupant.query.count()
     paid = 0
     due = 0
     for o in occupants:
@@ -404,10 +422,27 @@ def dashboard():
             paid +=  o.amountPaid 
         if o.due:
             due += o.roomCost
-
-    amountOutstanding =  due - paid
     
-    return render_template('dashboard.html', outstanding=amountOutstanding, paid=paid, due=due, tenants="6000")
+    totalNumberOfBeds = 0
+
+    for r in Room.query.all():
+        totalNumberOfBeds += r.maxOccupancy
+
+    availableBeds = totalNumberOfBeds-totalOccupants
+    occupancyRate = totalNumberOfBeds/availableBeds
+
+    print("totalNumberOfBeds:" + str(totalNumberOfBeds))
+    print("availableBeds:" + str(availableBeds))
+    # print("totalNumberOfBeds:" + totalNumberOfBeds)
+
+    occupancyRate = round(occupancyRate/100, 2)
+    amountOutstanding =  due - paid
+
+    # for bed in beds:
+
+
+    
+    return render_template('dashboard.html', occupancyRate=str(occupancyRate)+"%",outstanding=amountOutstanding, paid=paid, due=due, tenants="6000")
 
 @app.route('/allblocks/<string:id>', methods=['GET', 'POST'])
 @app.route('/allblocks', methods=['GET', 'POST'])
@@ -449,6 +484,13 @@ def details():
 def viewrooms():
 
     return render_template('viewrooms.html')
+
+# @app.route('/sendTelegram', methods=['GET', 'POST'])
+def sendTelegram(params):
+    url = "https://api.telegram.org/bot5873073506:AAGRf5b4sjmEzDUbApytx4lKoew_WbdrGsA/sendMessage?chat_id=-839615923&text=" + urllib.parse.quote(params)
+    content = urllib.request.urlopen(url).read()
+    print(content)
+    return content
 
 @app.route('/sendsms', methods=['GET', 'POST'])
 def sendsms(recieptNumber, guestName, bookingReference, paymentMethod, phone):
