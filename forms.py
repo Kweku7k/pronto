@@ -18,7 +18,7 @@ class Booking(FlaskForm):
     checkin = DateField('Check in Date', format='%Y-%m-%d')
     # special = SelectField('Special Request or Need', choices=[("-Select-", "-Select-"),("Top Bed", "Top Bed"), ("Down Bed", "Down Bed")])
 
-    submit = SubmitField('Choose a room')
+    submit = SubmitField('Make Payment')
 
 class NewRegistration(FlaskForm):
     firstname = StringField('Enter First Name', validators=[DataRequired()])

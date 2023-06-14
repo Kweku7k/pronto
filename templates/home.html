@@ -13,7 +13,7 @@
                     <p style="font-size: 20px OpenSans, sans-serif; border-left: 3px solid #243c4f; padding-left: 10px;">
                         Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quod exercitationem veritatis dolorum praesentium omnis placeat tempore quidem natus, distinctio vero.
                     </p>
-                    <a href="{{url_for("pronto")}}">
+                    <a href="#rooms">
                         <button class="pill">View all Rooms</button>
                     </a>
                     <!-- <div class="row d-sm-flex flex-wrap flex-lg-nowrap align-items-lg-center">
@@ -74,10 +74,10 @@
         </div>
     </section> -->
 
-    <section id="rooms" style="margin-top: 4vh; background: #fbf9f9; padding: 8px 0;">
+    <section id="rooms" style="margin-top: 4vh; background: #fbf9f9; padding: 5px 0;">
         <div class="container">
             <div class="d-flex justify-content-between align-items-justify">
-                <h2 style="margin-top: 7vh;">Hostel Rooms</h2>
+                <h2 style="margin: 3vh 0;">Hostel Rooms</h2>
                 <!-- <button class="pill" style="margin-left: 10px;">View all rooms</button> -->
             </div>
 
@@ -86,18 +86,18 @@
       
                   <div class="swiper-slide">
                     <div class="testimonial-item">
-                        <div class="card h-100" style="padding-bottom: 0;">
-                            <img src="../static/img/room4.jpg" class="card-img-top" alt="..." wi>
+                        <div class="card" style="padding-bottom: 0;">
+                            <img src="../static/img/hero.jpg" class="card-img-top" alt="..." wi>
                             <div class="card-body" style="margin: 0 1vw;">
-                              <h4 class="card-title" style="font-size: 22px Mulish, sans-serif; color: #040b11;">4-Bed Room with Shared Bathroom</h4>
+                              <h4 class="card-title" style="font-size: 22px Mulish, sans-serif; color: #040b11;">Single Suite Room</h4>
                                 <div class="d-inline-flex align-items-center">
-                                    <i class='bx bx-user'></i> 2 Sleeps
+                                    <i class='bx bx-user'></i> 1 Sleeps
                                 </div>
                                 <div class="d-inline-flex align-items-center">
-                                    <i class='bx bx-hotel' style="padding-left: 3px;"></i> 1 Bunk bed
+                                    <i class='bx bx-hotel' style="padding-left: 3px;"></i> 1 bed
                                 </div>
                                 <div class="">      
-                                    <a href="{{url_for("pronto")}}" style="text-decoration: none;">
+                                    <a href="{{url_for("details")}}" style="text-decoration: none;">
                                         <button style="padding: 10px 15px;" class="pill">Book Now <i class='bx bx-right-arrow-alt' style="padding-left: 3px;"></i></button>
                                     </a>
                                 </div>
@@ -109,18 +109,18 @@
                   
                   <div class="swiper-slide">
                     <div class="testimonial-item">
-                        <div class="card h-100" style="padding: 0; margin: 0;">
-                            <img src="../static/img/room5.jpg" class="card-img-top" alt="...">
+                        <div class="card" style="padding: 0; margin: 0;">
+                            <img src="../static/img/double.jpg" class="card-img-top" alt="...">
                             <div class="card-body" style="margin: 0 1vw;">
-                              <h4 class="card-title" style="font-size: 22px Mulish, sans-serif; color: #040b11;">4-Bed Room with Shared Bathroom</h4>
+                              <h4 class="card-title" style="font-size: 22px Mulish, sans-serif; color: #040b11;">Double Suite Room</h4>
                                 <div class="d-inline-flex align-items-center">
                                     <i class='bx bx-user'></i> 2 Sleeps
                                 </div>
                                 <div class="d-inline-flex align-items-center">
-                                    <i class='bx bx-hotel' style="padding-left: 3px;"></i> 1 Bunk bed
+                                    <i class='bx bx-hotel' style="padding-left: 3px;"></i> 2 beds
                                 </div>
                                 <div class="">      
-                                    <a href="{{url_for('pronto')}}" style="text-decoration: none;">
+                                    <a href="{{url_for('details')}}" style="text-decoration: none;">
                                         <button style="padding: 10px 15px;" class="pill">Book Now <i class='bx bx-right-arrow-alt' style="padding-left: 3px;"></i></button>
                                     </a>
                                 </div>
@@ -132,18 +132,18 @@
 
                   <div class="swiper-slide">
                     <div class="testimonial-item">
-                        <div class="card h-100">
-                            <img src="../static/img/room.jpeg" class="card-img-top" alt="...">
-                            <div class="card-body" style="margin: 1vh 1vw;">
-                              <h4 class="card-title" style="font-size: 22px Mulish, sans-serif; color: #040b11;">4-Bed Room with Shared Bathroom</h4>
+                        <div class="card">
+                            <img src="../static/img/triple.jpg" class="card-img-top" alt="...">
+                            <div class="card-body">
+                              <h4 class="card-title" style="font-size: 22px Mulish, sans-serif; padding-top: 4px; color: #040b11;">Triple Suite Room</h4>
                                 <div class="d-inline-flex align-items-center">
-                                    <i class='bx bx-user'></i> 2 Sleeps
+                                    <i class='bx bx-user'></i> 3 Sleeps
                                 </div>
                                 <div class="d-inline-flex align-items-center">
-                                    <i class='bx bx-hotel' style="padding-left: 3px;"></i> 1 Bunk bed
+                                    <i class='bx bx-hotel' style="padding-left: 3px;"></i> 3 beds
                                 </div>
                                 <div class="">      
-                                    <a href="{{url_for('pronto')}}" style="text-decoration: none;">
+                                    <a href="{{url_for('details')}}" style="text-decoration: none;">
                                         <button style="padding: 10px 15px;" class="pill">Book Now <i class='bx bx-right-arrow-alt' style="padding-left: 3px;"></i></button>
                                     </a>
                                 </div>
@@ -155,18 +155,18 @@
 
                   <div class="swiper-slide">
                     <div class="testimonial-item">
-                        <div class="card h-100">
-                            <img src="../static/img/room2.jpg" class="card-img-top" alt="...">
-                            <div class="card-body" style="margin: 1vh 1vw;">
-                              <h4 class="card-title" style="font-size: 22px Mulish, sans-serif; color: #040b11;">4-Bed Room with Shared Bathroom</h4>
+                        <div class="card">
+                            <img src="../static/img/four.jpg" class="card-img-top" alt="...">
+                            <div class="card-body">
+                              <h4 class="card-title" style="font-size: 22px Mulish, sans-serif; padding-top: 4px; color: #040b11;">Four Suite Room</h4>
                                 <div class="d-inline-flex align-items-center">
-                                    <i class='bx bx-user'></i> 2 Sleeps
+                                    <i class='bx bx-user'></i> 4 Sleeps
                                 </div>
                                 <div class="d-inline-flex align-items-center">
-                                    <i class='bx bx-hotel' style="padding-left: 3px;"></i> 1 Bunk bed
+                                    <i class='bx bx-hotel' style="padding-left: 3px;"></i> 2 Bunk bed
                                 </div>
                                 <div class="">      
-                                    <a href="{{url_for('pronto')}}" style="text-decoration: none;">
+                                    <a href="{{url_for('details')}}" style="text-decoration: none;">
                                         <button style="padding: 10px 15px;" class="pill">Book Now <i class='bx bx-right-arrow-alt' style="padding-left: 3px;"></i></button>
                                     </a>
                                 </div>
@@ -176,28 +176,7 @@
                     </div>
                   </div><!-- End testimonial item -->
 
-                  <div class="swiper-slide">
-                    <div class="testimonial-item">
-                        <div class="card h-100">
-                            <img src="../static/img/room3.jpg" class="card-img-top" alt="...">
-                            <div class="card-body" style="margin: 1vh 1vw;">
-                              <h4 class="card-title" style="font-size: 22px Mulish, sans-serif; color: #040b11;">4-Bed Room with Shared Bathroom</h4>
-                                <div class="d-inline-flex align-items-center">
-                                    <i class='bx bx-user'></i> 2 Sleeps
-                                </div>
-                                <div class="d-inline-flex align-items-center">
-                                    <i class='bx bx-hotel' style="padding-left: 3px;"></i> 1 Bunk bed
-                                </div>
-                                <div class="">      
-                                    <a href="{{url_for('pronto')}}" style="text-decoration: none;">
-                                        <button style="padding: 10px 15px;" class="pill">Book Now <i class='bx bx-right-arrow-alt' style="padding-left: 3px;"></i></button>
-                                    </a>
-                                </div>
-                                
-                            </div>       
-                        </div>
-                    </div>
-                  </div><!-- End testimonial item -->
+                  
 
                   
                 </div>

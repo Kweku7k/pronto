@@ -8,6 +8,7 @@ import csv
 import requests
 import urllib.request, urllib.parse
 from datetime import datetime
+from forms import DetailsForm 
 
 
 app=Flask(__name__)
@@ -184,7 +185,8 @@ def pronto():
             session['occupantId'] = newOccupant.id
 
         
-            return redirect(url_for('roomtype' ))
+            return redirect(('https://prestoghana.com/pay/prontohostel' ))
+            # return redirect(url_for('roomtype' ))
         
         else:
             print(form.errors)
@@ -477,10 +479,11 @@ def home():
 
 @app.route('/details', methods=['GET', 'POST'])
 def details():
-    form=DetailsForm()
-    if request.method=='POST':
+    form = DetailsForm()
+    if form.validate_on_submit():
         # Handle POST Request here
-        return render_template('details.html')
+        return redirect(url_for('form'))  # Redirect to the 'new_route' function
+    
     return render_template('details.html', form=form)
 
 @app.route('/viewrooms', methods=['GET', 'POST'])
