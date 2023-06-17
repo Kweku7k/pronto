@@ -44,7 +44,7 @@ color: #000;
 }
 
 .pill-button-alternate{
-background-color: #f2f2f2;
+background-color: white;
 border: none;
 color: #235784;
 border-radius:10px ;
@@ -53,7 +53,7 @@ box-shadow: 0 2px 8px 0 rgba(48, 44, 255, 0.1);
 text-align: center;
 font-weight: bold;
 transition: width 2s;
-/* width: 100%; */
+width: 100%;
 
 }
 
