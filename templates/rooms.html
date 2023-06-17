@@ -4,6 +4,7 @@
 
 <div class="container">
     <h1>Available rooms.</h1>
+    <!-- <h6></h6> -->
     <div>
         <div class="row">
             {% for r in rooms %}
@@ -12,9 +13,9 @@
                 <a class="answerCard" style="text-decoration: none; color: black;" href="{{url_for("payment", id=r.id)}}">
                     <div>    
                         <h6>Block {{r.block}} Room {{r.number}} </h6>  
-                        <h6>{{r.maxOccupancy}} in a room</h6>  
-                        <h6>{{r.floor}}</h6>     
-                        <h6>Beds {{r.bedsAvailable}}</h6>     
+                        <h6>{{r.maxOccupancy}}</h6>  
+                        <h6>{{r.size}}</h6>     
+                        <h6>Beds Remaining {{r.bedsAvailable}}</h6>     
                         <h6>GHS {{r.price}}</h6>     
                     </div>    
                 </a>

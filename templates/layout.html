@@ -63,6 +63,15 @@
   </nav>
   <main>
 
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <div class="flash-messages">
+            {% for message in messages %}
+                <div class="alert alert-success">{{ message }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+  {% endwith %}
 
     {% block body %}
 
@@ -73,8 +82,6 @@
     <div class="container">
       <div class="row">
         <div class="col-sm-12 col-md-6">
-          <!-- <h6>About</h6> -->
-          <!-- <img src="../static/img/fav.png" alt=""> -->
           <a class="navbar-brand d-flex" href="#">
             <img src="../static/img/logo.png" alt="Logo" width="50" height="40" class="d-inline-block align-text-top">
             <h5 style="padding: 5px 0 0 5px; color: #fff;">Pronto Hostels</h5>

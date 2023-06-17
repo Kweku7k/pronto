@@ -59,9 +59,11 @@
   </div>
   
    {{form.submit (class="pill-button", style="width:100%", onclick="") }}
-
+  
    </form>
-
+   <a href="{{url_for("reserve", id=occupant.id)}}">
+     <button class="pill-button-alternate">Reserve This Room</button>
+    </a>
 </div>  
 
   </main>

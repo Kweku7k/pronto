@@ -1,4 +1,5 @@
-from flask import Flask,redirect,url_for,render_template,request, session
+import os
+from flask import Flask, flash,redirect,url_for,render_template,request, session
 import urllib3
 from forms import *
 from flask_sqlalchemy import SQLAlchemy
@@ -8,7 +9,8 @@ import csv
 import requests
 import urllib.request, urllib.parse
 from datetime import datetime
-
+from werkzeug.utils import secure_filename
+import tempfile
 
 app=Flask(__name__)
 app.config['SECRET_KEY'] = '5791628basdfsabca32242sdfsfde280ba245'
@@ -16,9 +18,29 @@ app.config['SQLALCHEMY_DATABASE_URI']='sqlite:///test.db'
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
+class RoomConfig(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(), nullable=True)
+    number = db.Column(db.Integer(), nullable=True)
+    block = db.Column(db.Integer(), nullable=True)
+    bedsTaken = db.Column(db.Integer(), nullable=True)
+    bedsAvailable = db.Column(db.Integer(), nullable=True)
+    location = db.Column(db.String(), nullable=True)
+    maxOccupancy = db.Column(db.Integer(), nullable=True)
+    size = db.Column(db.String(), nullable=True)
+    code = db.Column(db.String(), nullable=True)
+    vacant = db.Column(db.Boolean(), default=False)
+    price = db.Column(db.Float(), nullable=True)
+
+    def __repr__(self): 
+        return f"RoomConfig('{self.name}', Vacant'{self.vacant}', Occupancy- '{self.size}',  Location- '{self.location}',  MaxOccupancy- '{self.bedsAvailable}' )"
+
+
+
 class Room(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     block = db.Column(db.String(), nullable=True)
+    name = db.Column(db.String(), nullable=True)
     number = db.Column(db.Integer(), nullable=True)
     maxOccupancy = db.Column(db.Integer(), nullable = True)
     occupancyStatus = db.Column(db.String(), nullable = True)
@@ -28,8 +50,8 @@ class Room(db.Model):
     tier = db.Column(db.String(), nullable = True)
     price = db.Column(db.Float(), nullable = True)
     roomtype = db.Column(db.String(), nullable = True)
-    slots = db.Column(db.Integer(), nullable = True)
-    space = db.Column(db.Boolean(), default=False)
+    slots = db.Column(db.Integer(), nullable = True) #BedsTaken
+    space = db.Column(db.Boolean(), default=False) #BedAvailable
 
     # user = db.Column(db.Integer, db.ForeignKey('user.id', ondelete="CASCADE"), nullable=False)
 
@@ -63,6 +85,13 @@ def __repr__(self):
     return f"Blocks ('{self.name}', Space('{self.space}', )"
 
 
+
+class Courses(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(), nullable=True)
+    # user = db.Column(db.Integer, db.ForeignKey('user.id', ondelete="CASCADE"), nullable=False)
+
+
 class RoomLocation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     floor = db.Column(db.String(), nullable=True)
@@ -70,7 +99,7 @@ class RoomLocation(db.Model):
     # user = db.Column(db.Integer, db.ForeignKey('user.id', ondelete="CASCADE"), nullable=False)
 
 def __repr__(self): 
-    return f"Room Type('{self.name}', Space('{self.space}', )"
+    return f"Room Type('{self.name}', Space('{self.space}' )"
 
 class Occupant(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -87,6 +116,7 @@ class Occupant(db.Model):
     amountPaid = db.Column(db.Float(), nullable=True, default=0)
     due = db.Column(db.Float(), nullable=True)
     paid = db.Column(db.Boolean(), default=False)
+    status = db.Column(db.String(), nullable=True)
 
 def __repr__(self): 
     return f"Occupant('{self.name}', Room('{self.roomnumber}', Paid- '{self.occupancyStatus}', )"
@@ -125,10 +155,37 @@ def rooms(id):
     print(roomtype)
 
     # allrooms = Room.query.filter_by(block=block).order_by(Room.number.asc()).all()
-    allrooms = Room.query.filter_by(maxOccupancy = roomtype, floor= floor, price=session["roomtier"], space=True).all()
+    allrooms = Room.query.filter_by(maxOccupancy = roomtype, floor= floor, price=session["roomtier"], space=False).all()
     # allrooms = Room.query.all()
     print(allrooms)
     return render_template('rooms.html', rooms=allrooms, block=block)
+
+
+@app.route('/roomselector/<int:id>', methods=['GET', 'POST'])
+def roomselector(id):
+    # Find occupant
+    occupant = Occupant.query.get_or_404(id)
+    print(occupant)
+
+    location = session["location"]
+    size = session["size"]
+    room = session["room"]
+# location=location, maxOccupancy=room, size=size
+    # allrooms = Room.query.filter_by(block=block).order_by(Room.number.asc()).all()
+    allrooms = RoomConfig.query.filter_by(vacant=True, location=location, size=size, bedsAvailable=room).all()
+    # allrooms = Room.query.all()
+    print(allrooms)
+    return render_template('rooms.html', rooms=allrooms, block=block)
+
+# NEW
+@app.route('/updateRoomData', methods=['GET', 'POST'])
+def updateRoomData():
+    roomconfig = RoomConfig.query.all()
+    for room in roomconfig:
+        if room.bedsTaken < room.bedsAvailable:
+            room.vacant = True
+        db.session.commit()
+    return "Done"
 
 
 @app.route('/allrooms/<string:id>', methods=['GET', 'POST'])
@@ -138,6 +195,33 @@ def allrooms(id):
     allrooms = Room.query.filter_by(block=block).all()
     print(allrooms)
     return render_template('allrooms.html', rooms=allrooms, block=block)
+
+
+@app.route('/admin/rooms/<string:option>', methods=['GET', 'POST'])
+def adminallrooms(option):
+    if option == 'all':
+        allrooms = RoomConfig.query.all()
+    elif option == 'vacant':
+        allrooms = RoomConfig.query.filter_by(vacant = True).all()
+    elif option == 'taken':
+        allrooms = RoomConfig.query.filter_by(vacant = False).all()
+    else:
+        allrooms = RoomConfig.query.all()
+
+    print(allrooms)
+    return render_template('allrooms.html', rooms=allrooms)
+
+
+@app.route('/admin/occupants/<string:option>', methods=['GET', 'POST'])
+def adminalloccupants(option):
+    if option == 'reserved':
+        all = Occupant.query.filter_by(status = "reserved").all()
+    print(all)
+
+    return render_template('occupants.html', alloccupants=all)
+
+
+
 
 @app.route('/blocks', methods=['GET', 'POST'])
 def block():
@@ -164,7 +248,7 @@ def sendRancardMessage(phone,message):
     print(r.text)
     return r.text
 
-
+# NEW
 @app.route('/form',methods=['GET','POST'])
 def pronto():
     form=Booking()
@@ -174,17 +258,22 @@ def pronto():
             newOccupant = Occupant(
                 name = form.name.data,
                 phone = form.phone.data,
-                # studentId = form.studentid.data,
+                studentId = form.studentId.data,
                 course = form.course.data,
                 level = form.level.data,
+
             )
 
             db.session.add(newOccupant)
             db.session.commit()
             session['occupantId'] = newOccupant.id
+            session['location'] = form.roomlocation.data
+            session['room'] = form.room.data
+            session['size'] = form.size.data
 
+            print(session)
         
-            return redirect(url_for('roomtype' ))
+            return redirect(url_for('roomselector', id=newOccupant.id))
         
         else:
             print(form.errors)
@@ -192,28 +281,129 @@ def pronto():
     return render_template('pronto.html', form=form)
 
 
-@app.route('/extractDatacsv', methods=['GET', 'POST'])
-def extractDatacsv():
-    with open('Documents/ROOMS.csv', newline='') as csvfile:
-        csv_reader = csv.DictReader(csvfile)
+# @app.route('/extractDatacsv', methods=['GET', 'POST'])
+# def extractDatacsv():
+#     with open('/Users/kweku/Documents/Projects/html/pronto/instance/RoomConfig.csv', newline='') as csvfile:
+#         csv_reader = csv.DictReader(csvfile)
 
-        csvData = []
+#         csvData = []
 
-        for r in Room.query.all():
-            db.session.delete(r)
-            db.session.commit()
+#         for r in RoomConfig.query.all():
+#             db.session.delete(r)
+#             db.session.commit()
 
 
-        for row in csv_reader:
-            print(row)
-            csvData.append(row)
-            newRoom = Room(block=row["BLOCK"], floor=row["FLOOR"], number=row["ROOM_NUMBER"], roomtype=row["ROOM_TYPE"], maxOccupancy=row["MAX_OCCUPANCY"], occupants=row["OCCUPANTS"], price=row["PRICE"], bedsAvailable=row["MAX_OCCUPANCY"], tier = row["TIER"], space=True )
-            db.session.add(newRoom)
+#         for row in csv_reader:
+#             print(row)
+#             csvData.append(row)
+#             # newRoomConfig = RoomConfig(block=row["BLOCK"], floor=row["FLOOR"], number=row["ROOM_NUMBER"], roomtype=row["ROOM_TYPE"], maxOccupancy=row["MAX_OCCUPANCY"], occupants=row["OCCUPANTS"], price=row["PRICE"], bedsAvailable=row["MAX_OCCUPANCY"], tier = row["TIER"], space=True )
+#             newRoomConfig = RoomConfig(name=row["Block/Room"], code=row["code"], bedsTaken=row["bedsTaken"], block=row["block"], number=row["room"], bedsAvailable=row["bedsAvailable"], location=row["roomLocation"], maxOccupancy = row["maxOccupancy"], size=row["size"], vacant=bool(["vacant"]), price=int(["price"]) )
+#             db.session.add(newRoomConfig)
         
-        db.session.commit()
+#         db.session.commit()
 
-        return csvData
+#         return csvData
     
+# @app.route('/upload', methods=['GET', 'POST'])
+# def upload_file():
+#     if request.method == 'POST':
+#         # Check if the post request has the file part
+#         if 'file' not in request.files:
+#             return 'No file part in the request'
+        
+#         file = request.files['file']
+        
+#         # Check if a file was selected
+#         if file.filename == '':
+#             return 'No file selected'
+
+#         filename = 'RoomConfig.csv'
+
+#         # Save file with new name
+#         file.save(os.path.join(app.instance_path, filename))
+
+
+#         # Process the uploaded file (in this example, simply save it)
+#         file.save(file.filename)
+        
+#         return 'File uploaded successfully'
+    
+#     return render_template('uploadexcel.html')
+
+def remove_bom(csv_data):
+    if csv_data.startswith('\ufeff'):
+        return csv_data[1:]
+    return csv_data
+
+
+@app.route('/upload/<string:field>', methods=['GET', 'POST'])
+def upload_csv(field):
+    if request.method == 'POST':
+        # Check if the post request has the file part
+        if 'file' not in request.files:
+            return 'No file part in the request'
+        
+        file = request.files['file']
+        
+        # Check if a file was selected
+        if file.filename == '':
+            return 'No file selected'
+
+        # Save the file to a secure temporary location
+        filename = file.filename
+        file_path = os.path.join(app.instance_path, filename)
+        print(file_path)
+        file.save(file_path)
+
+        if field == "rooms":
+            with open(file_path, newline='') as csvfile:
+                csv_reader = csv.DictReader(csvfile)
+
+                csvData = []
+
+                for r in RoomConfig.query.all():
+                    db.session.delete(r)
+                    db.session.commit()
+
+                for row in csv_reader:
+                    print("------row------")
+                    print(row)
+                    print("------end------")
+                    csvData.append(row)
+                    print(row["price"])
+                    price = row["price"]
+                    float(price)
+                    # newRoomConfig = RoomConfig(block=row["BLOCK"], floor=row["FLOOR"], number=row["ROOM_NUMBER"], roomtype=row["ROOM_TYPE"], maxOccupancy=row["MAX_OCCUPANCY"], occupants=row["OCCUPANTS"], price=row["PRICE"], bedsAvailable=row["MAX_OCCUPANCY"], tier = row["TIER"], space=True )
+                    newRoomConfig = RoomConfig(name=row["Block/Room"], code=row["code"], bedsTaken=row["bedsTaken"], block=row["block"], number=row["room"], bedsAvailable=row["bedsRemaining"], location=row["roomLocation"], maxOccupancy = row["bedsAvailable"], size=row["size"], price=price )
+                    db.session.add(newRoomConfig)
+                
+                db.session.commit()
+
+                roomdatastatus = updateRoomData()
+                print(roomdatastatus)
+
+                return csvData
+            
+        elif field == "courses":
+            with open(file_path, newline='') as csvfile:
+                csv_reader = csv.DictReader(csvfile)
+                
+                csvData = []
+
+                for row in csv_reader:
+                    print(row)
+                    newCourses = Courses(name=remove_bom(row["Course"]) )
+                    db.session.add(newCourses)
+                
+                db.session.commit()
+
+                return csvData
+        
+        else:
+            return 404
+    
+    return render_template('uploadexcel.html')
+
 
 @app.route('/extractroomtypecsv', methods=['GET', 'POST'])
 def extractroomtypecsv():
@@ -298,9 +488,9 @@ def payment(id):
     form=PaymentForm()
     print(id)
     session["roomnumber"] = id
-    form.roomNumber.data = "Block " + session["roomlocation"] + "Room "+ session["roomnumber"]
+    room = RoomConfig.query.get_or_404(id)
+    form.roomNumber.data = room.name
     occupant = Occupant.query.get_or_404(session['occupantId'])
-    room = Room.query.get_or_404(id)
     
     try:
         occupant.roomCost = float(room.price)
@@ -308,7 +498,6 @@ def payment(id):
         db.session.commit()
     except Exception as e:  
         print(e)
-
 
     if request.method == 'POST':
         if form.validate_on_submit:
@@ -344,7 +533,7 @@ def payment(id):
             print(form.errors)
             
     else:
-        room = Room.query.get_or_404(id)
+        room = RoomConfig.query.get_or_404(id)
         print(room.price)
         min = float(room.price)*0.60
         print("This is a get request")
@@ -354,16 +543,30 @@ def payment(id):
         occupant.block = room.block
         db.session.commit()
 
+        form.id.data = occupant.studentId
         form.name.data = occupant.name
         form.phone.data = occupant.phone
         form.amount.data = min
-        form.roomNumber.data ="Block " + room.block +" Room " +str(room.number)
+        form.roomNumber.data = room.name
+
+        # form.roomNumber.data ="Block " + room.block +" Room " +str(room.number)
     return render_template('payment.html', form=form, occupant=occupant, minAmount=min, maxAmount=room.price)
 
 
-def updateOccupant(amount, occupant):
-    # update balance
+@app.route('/reserve/<int:id>', methods=['GET', 'POST'])
+def reserve(id):
+    occupant = Occupant.query.get(id)
+    occupant.status = "reserved"
+    db.session.commit()
+
+    updateOccupant(0, occupant, "reserved")
+
+    flash(f'Block '+ occupant.block + 'Room ' + occupant.room +' has been reserved for ' + occupant.name  )
+    return redirect(url_for('home'))
+
+def updateOccupant(amount, occupant, action="paid"):
     amountBalance = occupant.roomCost - float(amount) #6000 - 3000 = 3000
+    
     # update block 
     block = Blocks.query.get_or_404(occupant.block) #find Block
     block.paid += amount #Update amount paid per block
@@ -382,18 +585,19 @@ def updateOccupant(amount, occupant):
     block.outstanding += outstanding
 
     # set room to hidden if full
-    room =  Room.query.get_or_404(occupant.roomid)
-    room.occupants += 1
+    room =  RoomConfig.query.get_or_404(occupant.roomid)
+    room.bedsTaken += 1
     room.bedsAvailable -= 1
     
     db.session.commit()
 
-    if room.bedsAvailable <= 0:
-        room.space = False
-        db.session.commit()
+    sendTelegram("Block " + str(room.block)+ " Room " + str(room.number) + "has been "+ action +" successfully by "+ str(occupant.name)+ " " + str(occupant.phone)+ ".\nAmount Paid "+ str(amount) + "\nRemaining Beds: "+ str(room.bedsAvailable))
 
-    sendTelegram("Block " + str(room.block)+ " Room " + str(room.number) + "has been purchased successfully by "+ str(occupant.name)+ " " + str(occupant.phone)+ ".\nAmount Paid "+ str(amount) + "\nRemaining Beds: "+ str(room.bedsAvailable))
-    
+    if room.bedsAvailable <= 0:
+        room.vacant = False
+        db.session.commit()
+        sendTelegram("Block " + str(room.block)+ " Room " + str(room.number) + " is no more vacant")
+
     return occupant
 # -------------- ADMIN -----------
 
@@ -497,9 +701,8 @@ def sendTelegram(params):
 
 @app.route('/sendsms', methods=['GET', 'POST'])
 def sendsms(recieptNumber, guestName, bookingReference, paymentMethod, phone):
-
     message = "Receipt Number:" +recieptNumber + "\n Date: "+ datetime.utcnow().strftime('%c') + "\nGuest Name:" + guestName + "\nBooking Reference: " + bookingReference + "\nPayment Method: " + paymentMethod + "\nReview occupancy terms and conditions here. \nDial *192*456*908# and use your booking reference to make future payments during your occupancy term. \nThank you for choosing Pronto Hostels. We hope you have a great stay with us!"
-    r = sendRancardMessage(phone ,message)
+    r = sendRancardMessage(phone,message)
     print(r)
     return "r"
 

@@ -8,13 +8,21 @@ class Booking(FlaskForm):
     course = StringField('Course of Study', validators=[DataRequired()])
     email = EmailField('Email', validators=[DataRequired()])
     studentId = StringField('Student Id', validators=[DataRequired()])
-    relation = StringField('Relationship to emergency contact', validators=[DataRequired()])
+    # maxOccupancy = SelectField('Select Max Occupancy', choices=[("Terrace", "Terrace"),("Ground Floor", "Ground Floor"), ("First Floor", "First Floor"), ("Second Floor", "Second Floor")], validators=[DataRequired()])
+
+    # relation = StringField('Relationship to emergency contact', validators=[DataRequired()])
+    relation = SelectField('Relationship to emergency contact', choices=[("Parent", "Parent"), ("Sibling", "Sibling"), ("Family Friend", "Family Friend"), ("Guardian", "Guardian")], validators=[DataRequired()])
+    
+    # bookingtype = SelectField('Booking Type', choices=[("-Select-", "-Select-"),("Single-Booking", "Single-Booking"), ("Multiple-Booking", "Multiple-Booking")], validators=[DataRequired()])
+    # bookingnumber = IntegerField('Number of Bookings', validators=[DataRequired()])
+    
+    roomlocation = SelectField('Select Room Location', choices=[("Terrace", "Terrace"),("Ground Floor", "Ground Floor"), ("First Floor", "First Floor"), ("Second Floor", "Second Floor")], validators=[DataRequired()])
+    room = SelectField('Select Room', choices=[("-Select-", "-Select-"),(1,"One in a Room"), (2,"Two in a Room"),(3,"Three in a Room"), (4, "Four in a room")], validators=[DataRequired()])
+    size = SelectField('Select Room Size', choices=[("-Select-", "-Select-"),("Small", "Small"),("Large", "Large")], validators=[DataRequired()])
+    
     nameOfEmergencyContact = StringField('Name Of Emergency Contact', validators=[DataRequired()])
     emergencyContact = StringField('Emergency Contact', validators=[DataRequired(), Length(min=10, max=10)])
     level = SelectField('Level', choices=[("-Select-", "-Select-"),("100", "100"), ("200", "200"), ("300", "300"),("400", "400"),("500", "500"),("Diploma", "Diploma"),("N/A", "N/A")], validators=[DataRequired()])
-    # bookingtype = SelectField('Booking Type', choices=[("-Select-", "-Select-"),("Single-Booking", "Single-Booking"), ("Multiple-Booking", "Multiple-Booking")], validators=[DataRequired()])
-    # bookingnumber = IntegerField('Number of Bookings', validators=[DataRequired()])
-    # room = SelectField('Select Room', choices=[("-Select-", "-Select-"),("One in a Room", "One in a Room"), ("Two in a Room", "Two in a Room"), ("Four in a room", "Four in a room")], validators=[DataRequired()])
     checkin = DateField('Check in Date', format='%Y-%m-%d')
     # special = SelectField('Special Request or Need', choices=[("-Select-", "-Select-"),("Top Bed", "Top Bed"), ("Down Bed", "Down Bed")])
 

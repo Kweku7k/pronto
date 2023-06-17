@@ -42,11 +42,29 @@
     
     <!-- <h3 style="font-size: 20px;">Reservation Details:</h3> -->
     
-    <div class="form-floating mb-3">
+    <!-- <div class="form-floating mb-3">
       {{form.checkin (class="form-control webForm", placeholder="Enter")}}
       {{form.checkin.label}}
       <h6 class="text-muted">Please enter the date you intend to occupy the room.</h6>
+    </div> -->
+
+    <!-- Room Selector -->
+    <h3 style="font-size: 20px;">Room Selection Details</h3>
+
+    <div class="form-floating mb-3">
+      {{form.roomlocation (class="form-control webForm", placeholder="Enter")}}
+      {{form.roomlocation.label}}
     </div>
+    <div class="form-floating mb-3">
+      {{form.room (class="form-control webForm", placeholder="Enter")}}
+      {{form.room.label}}
+    </div>
+    <div class="form-floating mb-3">
+      {{form.size (class="form-control webForm", placeholder="Enter")}}
+      {{form.size.label}}
+    </div>
+
+
     
     <h3 style="font-size: 20px;">Emergency Contact Details:</h3>
     
