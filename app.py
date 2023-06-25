@@ -1,3 +1,4 @@
+import asyncio
 import os
 from flask import Flask, flash,redirect,url_for,render_template,request, session
 import urllib3
@@ -11,6 +12,8 @@ import urllib.request, urllib.parse
 from datetime import datetime
 from werkzeug.utils import secure_filename
 import tempfile
+
+from sendsmsasync import send_bulk_sms
 
 app=Flask(__name__)
 app.config['SECRET_KEY'] = '5791628basdfsabca32242sdfsfde280ba245'
@@ -448,6 +451,17 @@ def broadcast():
 
                 for contact in contacts:
                     send_sms(contact, message, form.group.data)
+          
+                # List of recipients
+                recipients = contacts
+
+                # Run the event loop
+                try:
+                    loop = asyncio.get_event_loop()
+                    loop.run_until_complete(send_bulk_sms(recipients))
+                    loop.close()
+                except Exception as e:
+                    print(e)
 
                 flash('You have successfully sent ' + str(unique) + ' messages.')
                 return redirect(url_for('broadcast'))
