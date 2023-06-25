@@ -15,10 +15,13 @@ async def send_sms(phone,message, senderId):
 async def send_bulk_sms(recipients,message, senderId):
     print("Threading asyncio function")
     tasks = []
-    print(len(tasks))
     for recipient in recipients:
         tasks.append(send_sms(recipient,message, senderId))
+    print("About to fire in async")
+    print(len(tasks))
     await asyncio.gather(*tasks)
+
+
 
 # List of recipients
 
