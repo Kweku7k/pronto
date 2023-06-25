@@ -284,6 +284,14 @@ def occupants():
     alloccupants = Occupant.query.order_by(Occupant.id.desc()).all()
     return render_template("occupants.html", alloccupants = alloccupants)
 
+def send_sms(phone,message, senderId):
+    api_key = "aniXLCfDJ2S0F1joBHuM0FcmH" #Remember to put your own API Key here
+    params = {"key":api_key,"to":phone,"msg":message,"sender_id":"PrestoSl"}
+    url = 'https://apps.mnotify.net/smsapi?'+ urllib.parse.urlencode(params)
+    content = urllib.request.urlopen(url).read()
+    print(content)
+    print(url)
+
 
 def sendsms(phone,message):
     url = "https://unify-base.rancard.com/api/v2/sms/public/sendMessage"
@@ -439,7 +447,7 @@ def broadcast():
                 app.logger.info(message)
 
                 for contact in contacts:
-                    sendsms(contact, message, "PrestoSol")
+                    send_sms(contact, message, "PrestoSol")
 
                 flash('You have successfully sent ' + str(unique) + ' messages.')
                 return redirect(url_for('broadcast'))
