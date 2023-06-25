@@ -5,7 +5,8 @@ from wtforms.widgets import TextArea
 
 
 class BroadcastForm(FlaskForm):
-    group = SelectField('Group', choices=[('Voters', 'Voters'), ('Candidates','Candidates')])
+    # group = SelectField('Group', choices=[('Voters', 'Voters'), ('Candidates','Candidates')])
+    group = SelectField('Group', choices=[('TeamScrappy', 'TeamScrappy')])
     message = PasswordField('Message',widget=TextArea(), validators=[DataRequired()])
     submit = SubmitField('Broadcast')
 

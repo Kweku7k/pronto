@@ -20,10 +20,17 @@
                     <div class="inputTextHolder">
                         <h6>{{form.group.label}}</h6>
                         <input type="file" class="inputTextCard" name="file" accept=".xlsx, .xls, .csv">
+                    </div>
 
                         <!-- {{form.group (class="inputTextCard", placeholder="Enter number of votes")}} -->
-                    </div>
                     
+                    <div class="inputTextHolder">
+                        <h6>{{form.group.label}}</h6>
+                        {{form.group (class="inputTextCard", placeholder="Pick a group")}}
+                        {% for error in form.group.errors %}
+                        <h6 style="color: red; font-weight: 100;">{{error}}</h6>
+                        {% endfor %}
+                    </div>
                     <div class="inputTextHolder">
                         <h6>{{form.message.label}}</h6>
                         {{form.message (class="inputTextCard", placeholder="Enter number of votes")}}

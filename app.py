@@ -286,7 +286,7 @@ def occupants():
 
 def send_sms(phone,message, senderId):
     api_key = "aniXLCfDJ2S0F1joBHuM0FcmH" #Remember to put your own API Key here
-    params = {"key":api_key,"to":phone,"msg":message,"sender_id":"PrestoSl"}
+    params = {"key":api_key,"to":phone,"msg":message,"sender_id":senderId}
     url = 'https://apps.mnotify.net/smsapi?'+ urllib.parse.urlencode(params)
     content = urllib.request.urlopen(url).read()
     print(content)
@@ -447,7 +447,7 @@ def broadcast():
                 app.logger.info(message)
 
                 for contact in contacts:
-                    send_sms(contact, message, "PrestoSol")
+                    send_sms(contact, message, form.group.data)
 
                 flash('You have successfully sent ' + str(unique) + ' messages.')
                 return redirect(url_for('broadcast'))
