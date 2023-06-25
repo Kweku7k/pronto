@@ -1,0 +1,43 @@
+{% extends "prestolayout.html" %}
+
+{% block body %}
+
+
+<div class="container">
+    <div class="row" style="justify-content: space-around; margin-top: 5vh;">
+        <div class="col-md-6">
+            <div class="defaultCard">
+                <form action="" method="post" enctype="multipart/form-data">
+                    {{form.hidden_tag()}}
+                    
+                    <div class="ellipse" style="border: none; border-radius: 50%; overflow: hidden; margin: auto; background-color: rgb(48, 44, 255); border-radius:rgb(48, 44, 255);">
+                        <!-- <input type="file" name="file" accept=".xlsx, .xls, .csv"> -->
+                    </div>
+
+                    <h1 class="heading" style="text-align: center; margin-top: 5vh;">Broadcast</h1>
+                    <h6 style="text-align: center; width: 100%; ">You can broadcast a message to the number under your phoneNumber column.</h6>   
+                    
+                    <div class="inputTextHolder">
+                        <h6>{{form.group.label}}</h6>
+                        <input type="file" class="inputTextCard" name="file" accept=".xlsx, .xls, .csv">
+
+                        <!-- {{form.group (class="inputTextCard", placeholder="Enter number of votes")}} -->
+                    </div>
+                    
+                    <div class="inputTextHolder">
+                        <h6>{{form.message.label}}</h6>
+                        {{form.message (class="inputTextCard", placeholder="Enter number of votes")}}
+                        {% for error in form.message.errors %}
+                        <h6 style="color: red; font-weight: 100;">{{error}}</h6>
+                        {% endfor %}
+                    </div>
+
+                </br>
+                    {{form.submit (class="pill-button", onclick="showLoadingScreen()", style="width:100%")}}
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

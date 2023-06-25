@@ -388,6 +388,66 @@ def remove_bom(csv_data):
     return csv_data
 
 
+@app.route("/broadcast", methods=['GET','POST'])
+def broadcast():
+    form = BroadcastForm()
+
+    # contacts = "fetchVoters(award.slug)"
+    contacts = "data"
+    # numberOfContacts = len(contacts)
+    file_path = None
+
+    app.logger.info(session)
+
+    loadingMessage = "Broadcasting message to " + str("numberOfContacts") + " contacts, this might take a while😭"
+    if request.method == 'POST':
+        if 'file' in request.files:
+            
+            file = request.files['file']
+            
+            # Check if a file was selected
+            if file.filename == '':
+                return 'No file selected'
+
+            # Save the file to a secure temporary location
+            filename = file.filename
+            file_path = os.path.join(app.instance_path, filename)
+            print(file_path)
+            file.save(file_path)
+
+            with open(file_path, newline='') as csvfile:
+                csv_reader = csv.DictReader(csvfile)
+                
+                csvData = []
+
+                for row in csv_reader:
+                    print(row)
+                    csvData.append(row["phoneNumber"])
+
+                total = len(csvData)
+                filtered = list(dict.fromkeys(csvData))
+                unique = len(filtered)
+
+                print("Total " + str(total) + " - Unique " + str(unique))
+                contacts = filtered
+                
+                app.logger.info(session)
+                app.logger.info("form.csrf_token.data")
+                app.logger.info(form.csrf_token.data)
+                message = form.message.data
+                message += "\n \nPowered By PrestoGhana"
+                app.logger.info(message)
+
+                # for contact in contacts:
+                #     send_sms(contact, message, "PrestoVotes")
+
+                flash('You have successfully sent ' + str(unique) + ' messages.')
+                return redirect(url_for('broadcast'))
+
+    return render_template('broadcast.html',  contacts=contacts, numberOfContacts=0, form=form, loadingMessage=loadingMessage)
+
+
+
 @app.route('/upload/<string:field>', methods=['GET', 'POST'])
 def upload_csv(field):
     if request.method == 'POST':
@@ -425,7 +485,7 @@ def upload_csv(field):
                     print(row["price"])
                     price = row["price"]
                     float(price)
-                    # newRoomConfig = RoomConfig(block=row["BLOCK"], floor=row["FLOOR"], number=row["ROOM_NUMBER"], roomtype=row["ROOM_TYPE"], maxOccupancy=row["MAX_OCCUPANCY"], occupants=row["OCCUPANTS"], price=row["PRICE"], bedsAvailable=row["MAX_OCCUPANCY"], tier = row["TIER"], space=True )
+
                     newRoomConfig = RoomConfig(name=row["Block/Room"], code=row["code"], bedsTaken=row["bedsTaken"], block=row["block"], number=row["room"], bedsAvailable=row["bedsRemaining"], location=row["roomLocation"], maxOccupancy = row["bedsAvailable"], size=row["size"], price=price )
                     db.session.add(newRoomConfig)
                 
@@ -450,7 +510,23 @@ def upload_csv(field):
                 db.session.commit()
 
                 return csvData
-        
+        elif field == "sms":
+            with open(file_path, newline='') as csvfile:
+                csv_reader = csv.DictReader(csvfile)
+                
+                csvData = []
+
+                for row in csv_reader:
+                    print(row)
+                    csvData.append(row["phoneNumber"])
+
+                total = len(csvData)
+                filtered = list(dict.fromkeys(csvData))
+                unique = len(filtered)
+
+                print("Total " + str(total) + " - Unique " + str(unique))
+                return broadcast(filtered)
+                # return redirect(url_for('broadcast', data=filtered))
         else:
             return 404
     
@@ -584,7 +660,6 @@ def payment(id):
             except Exception as e:
                 sendTelegram("Couldnt transaction!!! FOLLOW UP IN LOGS.")
                 # return redirect()
-            
             
             return redirect(paymentUrl+'/pay/prontohostel?amount='+form.amount.data+'?name='+form.name.data+'?reference='+concatenationbookingreference)
 

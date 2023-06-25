@@ -1,6 +1,13 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, BooleanField, SelectField, IntegerField, RadioField, DateField, FileField, EmailField
 from wtforms.validators import DataRequired, Email, Length, EqualTo, ValidationError
+from wtforms.widgets import TextArea
+
+
+class BroadcastForm(FlaskForm):
+    group = SelectField('Group', choices=[('Voters', 'Voters'), ('Candidates','Candidates')])
+    message = PasswordField('Message',widget=TextArea(), validators=[DataRequired()])
+    submit = SubmitField('Broadcast')
 
 class Booking(FlaskForm):
     name = StringField('Enter Your Full Name', validators=[DataRequired()])
