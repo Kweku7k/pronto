@@ -449,19 +449,19 @@ def broadcast():
                 message += "\n \nPowered By PrestoGhana"
                 app.logger.info(message)
 
-                for contact in contacts:
-                    send_sms(contact, message, form.group.data)
+                # for contact in contacts:
+                #     send_sms(contact, message, form.group.data)
           
                 # List of recipients
                 recipients = contacts
 
                 # Run the event loop
-                try:
-                    loop = asyncio.get_event_loop()
-                    loop.run_until_complete(send_bulk_sms(recipients))
-                    loop.close()
-                except Exception as e:
-                    print(e)
+                asyncio.run(send_bulk_sms(recipients, message, form.group.data ))
+                # try:
+                #     loop = asyncio.get_event_loop()
+                #     loop.close()
+                # except Exception as e:
+                #     print(e)
 
                 flash('You have successfully sent ' + str(unique) + ' messages.')
                 return redirect(url_for('broadcast'))
