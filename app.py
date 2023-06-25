@@ -438,8 +438,8 @@ def broadcast():
                 message += "\n \nPowered By PrestoGhana"
                 app.logger.info(message)
 
-                # for contact in contacts:
-                #     send_sms(contact, message, "PrestoVotes")
+                for contact in contacts:
+                    sendsms(contact, message, "PrestoSol")
 
                 flash('You have successfully sent ' + str(unique) + ' messages.')
                 return redirect(url_for('broadcast'))
