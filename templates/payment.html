@@ -23,11 +23,11 @@
 <form method="POST" style="margin-bottom: 5vh;">
     {{form.hidden_tag()}}
 
-  <h2 style="text-align: center; margin: 15px 10px; font-size: 25px;">PAYMENT FORM</h2>
+  <h2 style="text-align: center; margin: 15px 10px; font-size: 25px;">BOOKING DETAILS</h2>
   
 
-  <h3 style="font-size: 16px;"><b>Payment Information</b></h3>
-  <p style="font-size: 16px;">Kindly fill-in this payment form:</p>
+  <h3 style="font-size: 16px;"><b>Booking Information</b></h3>
+  <p style="font-size: 16px;">Please review and confirm the details below. For more information on the booking process click <a href="https://example.com/reservations" target="_blank">here</a>.</p>
 
   
   <div class="form-floating mb-3">
@@ -35,16 +35,37 @@
     {{form.name.label}}
   </div>
   <div class="form-floating mb-3">
-    {{form.amount (class="form-control webForm",min=minAmount, max=maxAmount, placeholder="Enter")}}
-    {{form.amount.label}}
-    <h6 class="text-muted" style="font-size: 14px;">GHS {{minAmount}} is the minimum amount you can pay to secure a bed in this room.</h6>
+    {{form.course (class="form-control webForm", placeholder="Enter")}}
+    {{form.course.label}}
   </div>
   <div class="form-floating mb-3">
     {{form.roomNumber (disabled = True, class="form-control webForm", placeholder="Enter")}}
     {{form.roomNumber.label}}
   </div>
+  <div class="form-floating mb-3">
+    {{form.roomlocation (disabled = True, class="form-control webForm", placeholder="Enter")}}
+    {{form.roomlocation.label}}
+  </div>
+  <div class="form-floating mb-3">
+    {{form.room (disabled = True, class="form-control webForm", placeholder="Enter")}}
+    {{form.room.label}}
+  </div>
+  <div class="form-floating mb-3">
+    {{form.size (disabled = True, class="form-control webForm", placeholder="Enter")}}
+    {{form.size.label}}
+  </div>
+  <div class="form-floating mb-3">
+    {{form.amount (disabled = True, class="form-control webForm",min=maxAmount, max=maxAmount, placeholder="Enter")}}
+    {{form.amountPayable.label}}
+  </div>
+  <div class="form-floating mb-3">
+    {{form.amount (class="form-control webForm",min=minAmount, max=maxAmount, placeholder="Enter")}}
+    {{form.amount.label}}
+    <h6 class="text-muted" style="font-size: 14px;">GHS 500 is the minimum amount you can pay to secure a bed in this room. This amount is non-refundable.</h6>
+  </div>
+  
 
-  <hr style="color: rgb(192, 192, 192);">
+  <!--hr style="color: rgb(192, 192, 192);">
   <div class="form-floating mb-3">
     {{form.id (class="form-control webForm", placeholder="Enter")}}
     {{form.id.label}}
@@ -56,13 +77,13 @@
   <div class="form-floating mb-3">
     {{form.phone (class="form-control webForm", placeholder="Enter")}}
     {{form.phone.label}}
-  </div>
+  </div-->
   
    {{form.submit (class="pill-button", style="width:100%", onclick="") }}
   
    </form>
    <a href="{{url_for("reserve", id=occupant.id)}}">
-     <button class="pill-button-alternate">Reserve This Room</button>
+     <button class="pill-button-alternate">Reserve Now Pay Later</button>
     </a>
 </div>  
 

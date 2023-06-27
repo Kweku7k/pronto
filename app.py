@@ -657,7 +657,7 @@ def payment(id):
             print("validated")
             baseUrl = "https://sandbox.prestoghana.com"
             paymentUrl = "https://sandbox.prestoghana.com/korba"
-            min = float(room.price)*0.60
+            min = float(room.price)*0.75
             if form.amount.data == None:
                 form.amount.data = min
                 # name, occupantid, roomid, indexnumber
@@ -716,7 +716,8 @@ def payment(id):
     else:
         room = RoomConfig.query.get_or_404(id)
         print(room.price)
-        min = float(room.price)*0.60
+        min = float(room.price)
+        #min = float(room.price)*0.75
         print("This is a get request")
 
         occupant = Occupant.query.get_or_404(session["occupantId"])
@@ -851,7 +852,7 @@ def reserve(id):
 
     updateOccupant(0, occupant, "reserved")
 
-    flash(f'Block '+ occupant.block + 'Room ' + occupant.room +' has been reserved for ' + occupant.name  )
+    flash(f'Block '+ occupant.block +' '+ 'Room ' + occupant.room +' has been reserved for ' + occupant.name  )
     return redirect(url_for('home'))
 
 
