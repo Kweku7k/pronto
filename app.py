@@ -17,7 +17,8 @@ from sendsmsasync import send_bulk_sms
 
 app=Flask(__name__)
 app.config['SECRET_KEY'] = '5791628basdfsabca32242sdfsfde280ba245'
-app.config['SQLALCHEMY_DATABASE_URI']='sqlite:///test.db'
+app.config['SQLALCHEMY_DATABASE_URI']="postgresql://postgres:adumatta@database-1.crebgu8kjb7o.eu-north-1.rds.amazonaws.com:5432/pronto"
+
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
@@ -139,6 +140,9 @@ class Occupant(db.Model):
     course = db.Column(db.String(), nullable=True)
     level = db.Column(db.String(), nullable=True)
     room = db.Column(db.String(), nullable=True)
+    location = db.Column(db.String(), nullable=True)
+    size = db.Column(db.String(), nullable=True)
+    maxOccupancy = db.Column(db.Integer(), nullable=True)
     block = db.Column(db.String(), nullable=True)
     roomnumber = db.Column(db.String(), nullable=True)
     roomid = db.Column(db.String(), nullable=True)
@@ -322,7 +326,10 @@ def pronto():
                 phone = form.phone.data,
                 studentId = form.studentId.data,
                 course = form.course.data,
-                level = form.level.data
+                level = form.level.data,
+                room = form.room.data,
+                size = form.size.data, 
+                location = form.roomlocation.data
             )
 
             db.session.add(newOccupant)
@@ -642,6 +649,9 @@ def payment(id):
     room = RoomConfig.query.get_or_404(id)
     form.roomNumber.data = room.name
     occupant = Occupant.query.get_or_404(session['occupantId'])
+    min = float(room.price)*0.75
+    max = float(room.price)
+
 
     try:
         occupant.roomCost = float(room.price)
@@ -656,13 +666,14 @@ def payment(id):
         if form.validate_on_submit:
             print("validated")
             baseUrl = "https://sandbox.prestoghana.com"
-            paymentUrl = "https://sandbox.prestoghana.com/korba"
-            min = float(room.price)*0.75
+            paymentUrl = "https://sandbox.prestoghana.com"
+
             if form.amount.data == None:
                 form.amount.data = min
                 # name, occupantid, roomid, indexnumber
 
             concatenationbookingreference = str(occupant.id)+occupant.name+room.name
+            concatenationbookingreference=concatenationbookingreference.upper()
             
             transaction = Transactions(
                 occupantId = occupant.id,
@@ -680,10 +691,9 @@ def payment(id):
                 db.session.add(transaction)
                 db.session.commit()
             except Exception as e:
-                sendTelegram("Couldnt transaction!!! FOLLOW UP IN LOGS.")
-                # return redirect()
+                sendTelegram("Couldnt create transaction!!! FOLLOW UP IN LOGS.")
             
-            return redirect(paymentUrl+'/pay/prontohostel?amount='+form.amount.data+'?name='+form.name.data+'?reference='+concatenationbookingreference)
+            return redirect(paymentUrl+'/pay/prontohostel?amount='+str(form.amount.data)+'&name='+form.name.data+'&reference='+concatenationbookingreference)
 
         # handle transactions here.
 
@@ -716,8 +726,7 @@ def payment(id):
     else:
         room = RoomConfig.query.get_or_404(id)
         print(room.price)
-        min = float(room.price)
-        #min = float(room.price)*0.75
+        # min = float(room.price)
         print("This is a get request")
 
         occupant = Occupant.query.get_or_404(session["occupantId"])
@@ -727,12 +736,16 @@ def payment(id):
 
         form.id.data = occupant.studentId
         form.name.data = occupant.name
+        form.course.data = occupant.course
+        form.size.data = occupant.size
+        form.room.data = str(room.maxOccupancy )+ " in a room."
         form.phone.data = occupant.phone
         form.amount.data = min
         form.roomNumber.data = room.name
+        form.roomlocation.data = occupant.location
 
         # form.roomNumber.data ="Block " + room.block +" Room " +str(room.number)
-    return render_template('payment.html', form=form, occupant=occupant, minAmount=min, maxAmount=room.price)
+    return render_template('payment.html', form=form, occupant=occupant, minAmount=min, maxAmount=max)
 
 
 
