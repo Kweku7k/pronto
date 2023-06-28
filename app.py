@@ -513,7 +513,7 @@ def upload_csv(field):
                     csvData.append(row)
                     print(row["price"])
                     price = row["price"]
-                    float(price)
+                    # price = float(price)
 
                     newRoomConfig = RoomConfig(name=row["Block/Room"], code=row["code"], bedsTaken=row["bedsTaken"], block=row["block"], number=row["room"], bedsAvailable=row["bedsRemaining"], location=row["roomLocation"], maxOccupancy = row["bedsAvailable"], size=row["size"], price=price )
                     db.session.add(newRoomConfig)
@@ -666,14 +666,13 @@ def payment(id):
         if form.validate_on_submit:
             print("validated")
             baseUrl = "https://sandbox.prestoghana.com"
-            paymentUrl = "https://sandbox.prestoghana.com"
 
             if form.amount.data == None:
                 form.amount.data = min
                 # name, occupantid, roomid, indexnumber
 
             concatenationbookingreference = str(occupant.id)+occupant.name+room.name
-            concatenationbookingreference=concatenationbookingreference.upper()
+            concatenationbookingreference=concatenationbookingreference.upper().replace(" ", "")
             
             transaction = Transactions(
                 occupantId = occupant.id,
@@ -693,7 +692,8 @@ def payment(id):
             except Exception as e:
                 sendTelegram("Couldnt create transaction!!! FOLLOW UP IN LOGS.")
             
-            return redirect(paymentUrl+'/pay/prontohostel?amount='+str(form.amount.data)+'&name='+form.name.data+'&reference='+concatenationbookingreference)
+                callback_url = baseUrl+"/confirm/"+id
+            return redirect(baseUrl+'/pay/prontohostel?amount='+str(form.amount.data)+'&name='+form.name.data+'&reference='+concatenationbookingreference)+'&callback_url='+callback_url+'recipient=external'
 
         # handle transactions here.
 
@@ -989,7 +989,9 @@ def master():
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
-
+    print("Session is being cleared")
+    session.clear()
+    print(session)
     return render_template('home.html')
 
 @app.route('/details', methods=['GET', 'POST'])
