@@ -404,7 +404,7 @@ def broadcast():
     form = BroadcastForm()
 
     # contacts = "fetchVoters(award.slug)"
-    contacts = "data"
+    contacts = None
     # numberOfContacts = len(contacts)
     file_path = None
 

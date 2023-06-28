@@ -2,7 +2,6 @@ import asyncio
 
 import urllib.request, urllib.parse
 
-
 async def send_sms(phone,message, senderId):
     api_key = "aniXLCfDJ2S0F1joBHuM0FcmH" #Remember to put your own API Key here
     params = {"key":api_key,"to":phone,"msg":message,"sender_id":senderId}
@@ -13,6 +12,7 @@ async def send_sms(phone,message, senderId):
     print(f"Sending SMS to {phone}")
 
 async def send_bulk_sms(recipients,message, senderId):
+    # batch by 40.
     print("Threading asyncio function")
     tasks = []
     for recipient in recipients:
