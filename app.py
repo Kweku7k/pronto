@@ -527,4 +527,4 @@ def sendsms(recieptNumber, guestName, bookingReference, paymentMethod, phone):
 
 if __name__ == '__main__':
     #DEBUG is SET to TRUE. CHANGE FOR PROD
-    app.run(port=5000, host='0.0.0.0', debug=True)
+    app.run(port=4000, host='0.0.0.0', debug=True)
