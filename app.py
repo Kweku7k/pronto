@@ -1,13 +1,12 @@
 import asyncio
 import os
 from flask import Flask, flash,redirect,url_for,render_template,request, session
-import urllib3
 from forms import *
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 import httpx
 import csv
-import requests
+# import requests
 import urllib.request, urllib.parse
 from datetime import datetime
 from werkzeug.utils import secure_filename
@@ -64,7 +63,7 @@ class Transactions(db.Model):
     pending = db.Column(db.Boolean, default=True)
     
     def __repr__(self):
-        return f"Transaction(': {self.id}', 'Amount:{self.amount}', 'Candidate:{self.candidate}', 'Paid:{self.paid}')"
+        return f"Transaction(': {self.id}', 'Amount:{self.amount}', 'Paid:{self.paid}')"
 
 
 class Room(db.Model):
@@ -310,7 +309,7 @@ def sendsms(phone,message):
         "hasPlaceholders": False,
         "senderId": "Pronto"
     }
-    r = requests.post(url, json=message)
+    r = httpx.post(url, json=message)
     print(r.text)
     return r.text
 
@@ -665,8 +664,10 @@ def payment(id):
     if request.method == 'POST':
         if form.validate_on_submit:
             print("validated")
-            baseUrl = "https://pronto.prestoghana.com"
-            paymentUrl = "https://sandbox.prestoghana.com"
+            # baseUrl = "https://pronto.prestoghana.com"
+            baseUrl = "http://192.168.8.105:4000"
+            paymentUrl = "http://192.168.8.100:5000"
+            # paymentUrl = "https://sandbox.prestoghana.com"
 
             if form.amount.data == None:
                 form.amount.data = min
@@ -693,9 +694,9 @@ def payment(id):
             except Exception as e:
                 sendTelegram("Couldnt create transaction!!! FOLLOW UP IN LOGS.")
             
-            callback_url = baseUrl+"/confirm/"+id
+            callback_url = baseUrl+"/confirm/"+str(transaction.id)
             
-            return redirect(baseUrl+'/pay/prontohostel?amount='+str(form.amount.data)+'&name='+form.name.data+'&reference='+concatenationbookingreference+'&callback_url='+callback_url+'&recipient=external')
+            return redirect(paymentUrl+'/pay/prontohostel?amount='+str(form.amount.data)+'&name='+form.name.data+'&reference='+concatenationbookingreference+'&callback_url='+callback_url+'&recipient=external')
 
         # handle transactions here.
 
@@ -752,7 +753,7 @@ def payment(id):
 
 
 def confirmPrestoPayment(transaction):
-    r = requests.get(prestoUrl + '/verifykorbapayment/'+transaction.ref).json()
+    r = httpx.get(prestoUrl + '/verifykorbapayment/'+transaction.ref).json()
     
     print(r)
     print("--------------status--------------")
@@ -766,7 +767,7 @@ def confirmPrestoPayment(transaction):
         # findtrasaction, again because of the lag.
         state = Transactions.query.get_or_404(transaction.id)
         if state.paid != True:
-            try:
+            try: #TODO: fix this!
                 state.paid = True
                 state.pending = False
                 db.session.commit()
@@ -826,13 +827,30 @@ def createLedgerCredit(transaction):
 
 @app.route('/confirm/<string:transactionId>', methods=['GET', 'POST'])
 def confirm(transactionId):
+
+    print("Attempting to confirm transaction: \n TransactionId: " + transactionId)
     message = "In Progress"
 
     transaction = Transactions.query.get_or_404(transactionId)
+    print("Transaction")
+    print(transaction)
+
     occupant = Occupant.query.get_or_404(transaction.occupantId)
+    print("occupant")
+    print(occupant)
+
     room = RoomConfig.query.get_or_404(transaction.roomId)
-    
-    print("Attempting to confirm transaction: \n TransactionId: " + transaction.id + "\nOccupant: " + occupant.id + ". " + occupant.name + "\nRoom: "+ room.name)
+    print("room")
+    print(room)
+
+    try:
+        transaction.ref = request.args.get("ref")
+        db.session.commit()
+    except Exception as e:
+        print(e)
+        print("Error in Confirming Transaction:")
+
+    # print("Attempting to confirm transaction: \n TransactionId: " + transaction.id + "\nOccupant: " + occupant.id + ". " + occupant.name + "\nRoom: "+ room.name)
 
     if transaction.paid == False:
         message = "Failed Transaction"
@@ -842,7 +860,11 @@ def confirm(transactionId):
             # CREATE A CREDIT TO AN OCCUPANT.
             credit = createLedgerCredit(transaction)
             if credit != None: #If a credit was already created
-                updateOccupant(transaction.amount, transaction.occupantId, "paid")
+                # find occupant
+                print("occupant")
+                occupant = Occupant.query.get_or_404(occupant.id)
+                print(occupant)
+                updateOccupant(transaction.amount, occupant, "paid")
             else:
                 app.logger.error("Transaction: " + str(transaction.id) + " was attempting to be recreated.")
         else:
@@ -861,7 +883,7 @@ def confirm(transactionId):
 
 @app.route('/reserve/<int:id>', methods=['GET', 'POST'])
 def reserve(id):
-    occupant = Occupant.query.get(id)
+    occupant = Occupant.query.get_or_404(id)
     occupant.status = "reserved"
     db.session.commit()
 
@@ -874,22 +896,27 @@ def reserve(id):
 # confirm route!
 # if transaction is paid once!
 def updateOccupant(amount, occupant, action="paid"):
+    print(occupant)
     amountBalance = occupant.roomCost - float(amount) #6000 - 3000 = 3000
     
-    # update block 
-    block = Blocks.query.get_or_404(occupant.block) #find Block
-    block.paid += amount #Update amount paid per block
 
+    print("Updating Blocks")
+    # update block 
+    # block = Blocks.query.get_or_404(occupant.block) #find Block
+    # print(block)
+    # block.paid += amount #Update amount paid per block
+
+    print("Updating Blocks")
     # Current balance + amount paid
     occupant.amountPaid += amount
     occupant.due = amountBalance #wrong
     outstanding = occupant.roomCost - amount
     
-    block.due += occupant.roomCost
-    block.outstanding += outstanding
+    # block.due += occupant.roomCost
+    # block.outstanding += outstanding
 
     # set room to hidden if full
-    room =  RoomConfig.query.get_or_404(occupant.roomid)
+    room = RoomConfig.query.get_or_404(occupant.roomid)
     room.bedsTaken += 1
     room.bedsAvailable -= 1
     
@@ -899,13 +926,18 @@ def updateOccupant(amount, occupant, action="paid"):
         message = "You have successfully reserved "+ str(room.name) +". Please make a payment of no less than GHS 1000 by the 30th of July 2023 to confirm your reservation."
         sendTelegram("RESERVATION: \nBlock " + str(room.block)+ " Room " + str(room.number) + "has been "+ action +" successfully by "+ str(occupant.name)+ " " + str(occupant.phone)+ ".\nAmount Paid "+ str(amount) + "\nRemaining Beds: "+ str(room.bedsAvailable))
     
-    elif action == "purchase":
-        message = "Receipt Number:" + occupant.phone + "\n Date: "+ datetime.utcnow().strftime('%c') + "\nGuest Name:" + occupant.name + "\nBooking Reference: " + transaction + "\nPayment Method: " + paymentMethod + "\nReview occupancy terms and conditions here. \nDial *192*456*908# and use your booking reference to make future payments during your occupancy term. \nThank you for choosing Pronto Hostels. We hope you have a great stay with us!"
+    elif action == "purchase" or action == "paid":
+        message = "Receipt Number:" + occupant.phone + "\n Date: "+ datetime.utcnow().strftime('%c') + "\nGuest Name:" + occupant.name + "\nBooking Reference: " + "transaction" + "\nPayment Method: " + "paymentMethod" + "\nReview occupancy terms and conditions here. \nDial *192*456*908# and use your booking reference to make future payments during your occupancy term. \nThank you for choosing Pronto Hostels. We hope you have a great stay with us!"
 
         sendTelegram("PURCHASE: \nBlock " + str(room.block)+ " Room " + str(room.number) + "has been "+ action +" successfully by "+ str(occupant.name)+ " " + str(occupant.phone)+ ".\nAmount Paid "+ str(amount) + "\nRemaining Beds: "+ str(room.bedsAvailable))
     
     # TRY CATCH FOR EACH!
-    sendsms(occupant.phone, message)
+    try:
+        print("Attempting to fire sms")
+        send_sms(occupant.phone, message, "Pronto")
+    except Exception as e:
+        print("Couldnt fire sms")
+        print(e)
     # sendTelegram("Block " + str(room.block)+ " Room " + str(room.number) + "has been "+ action +" successfully by "+ str(occupant.name)+ " " + str(occupant.phone)+ ".\nAmount Paid "+ str(amount) + "\nRemaining Beds: "+ str(room.bedsAvailable))
 
     if room.bedsAvailable <= 0:
