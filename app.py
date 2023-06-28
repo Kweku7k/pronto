@@ -665,7 +665,8 @@ def payment(id):
     if request.method == 'POST':
         if form.validate_on_submit:
             print("validated")
-            baseUrl = "https://sandbox.prestoghana.com"
+            baseUrl = "https://pronto.prestoghana.com"
+            paymentUrl = "https://sandbox.prestoghana.com"
 
             if form.amount.data == None:
                 form.amount.data = min
@@ -692,8 +693,9 @@ def payment(id):
             except Exception as e:
                 sendTelegram("Couldnt create transaction!!! FOLLOW UP IN LOGS.")
             
-                callback_url = baseUrl+"/confirm/"+id
-            return redirect(baseUrl+'/pay/prontohostel?amount='+str(form.amount.data)+'&name='+form.name.data+'&reference='+concatenationbookingreference)+'&callback_url='+callback_url+'recipient=external'
+            callback_url = baseUrl+"/confirm/"+id
+            
+            return redirect(baseUrl+'/pay/prontohostel?amount='+str(form.amount.data)+'&name='+form.name.data+'&reference='+concatenationbookingreference+'&callback_url='+callback_url+'&recipient=external')
 
         # handle transactions here.
 
