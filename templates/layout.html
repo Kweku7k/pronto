@@ -63,6 +63,15 @@
   </nav>
   <main>
 
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <div class="flash-messages">
+            {% for message in messages %}
+                <div class="alert alert-success">{{ message }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+  {% endwith %}
 
     {% block body %}
 
@@ -73,13 +82,11 @@
     <div class="container">
       <div class="row">
         <div class="col-sm-12 col-md-6">
-          <!-- <h6>About</h6> -->
-          <!-- <img src="../static/img/fav.png" alt=""> -->
           <a class="navbar-brand d-flex" href="#">
             <img src="../static/img/logo.png" alt="Logo" width="50" height="40" class="d-inline-block align-text-top">
             <h5 style="padding: 5px 0 0 5px; color: #fff;">Pronto Hostels</h5>
           </a>
-          <p class="text-justify" style="margin-top: 2vh;">Lorem ipsum dolor sit amet consectetur adipisicing elit. Veritatis nemo voluptas tempora minima magnam totam, iusto recusandae provident quidem quasi placeat nam!</p>
+          <p class="text-justify" style="margin-top: 2vh;">Stay on campus at our conveniently located hostel. Just steps away from all your classes, activities, and friends</p>
         </div>
 
         <div class="col-xs-4 col-md-2" style="margin-top: 2vh;">
