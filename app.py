@@ -49,6 +49,7 @@ class Transactions(db.Model):
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
     amount = db.Column(db.Float)
     roomId = db.Column(db.Integer)
+    ref = db.Column(db.Integer)
     roomName = db.Column(db.String)
     roomBlock = db.Column(db.Integer)
     account = db.Column(db.String)
@@ -150,6 +151,7 @@ class Occupant(db.Model):
     due = db.Column(db.Float(), nullable=True)
     paid = db.Column(db.Boolean(), default=False)
     status = db.Column(db.String(), nullable=True)
+    active = db.Column(db.Boolean(), default=False)
 
 class Ledger(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -229,7 +231,7 @@ def roomselector(id):
     room = session["room"]
 # location=location, maxOccupancy=room, size=size
     # allrooms = Room.query.filter_by(block=block).order_by(Room.number.asc()).all()
-    allrooms = RoomConfig.query.filter_by(vacant=True, location=location, size=size, bedsAvailable=room).all()
+    allrooms = RoomConfig.query.filter_by(vacant=True, location=location, size=size, maxOccupancy=room).all()
     # allrooms = Room.query.all()
     print(allrooms)
     return render_template('rooms.html', rooms=allrooms, block=block)
@@ -340,7 +342,7 @@ def pronto():
 
             print(session)
 
-            sendTelegram("New Occupant Created!: \nOccupant: " + str(newOccupant.id )+". "+newOccupant.name + "\nStudentId: " + newOccupant.studentId + "\nCourse: " + newOccupant.course + "\nLevel: " + newOccupant.level )
+            sendTelegram("New Occupant Created!: \nOccupant: " + str(newOccupant.id )+". "+newOccupant.name + "\nStudentId: " + newOccupant.studentId + "\nCourse: " + newOccupant.course + "\nLevel: " + newOccupant.level + "\nStatus: " + str(newOccupant.active)  + "\nRoomData:\n"+ str(form.roomlocation.data) + "\n" +str(form.room.data) + "in a room \n" + str(form.size.data))
         
             return redirect(url_for('roomselector', id=newOccupant.id))
         
@@ -673,6 +675,8 @@ def payment(id):
                 form.amount.data = min
                 # name, occupantid, roomid, indexnumber
 
+            occupant.active = True
+
             concatenationbookingreference = str(occupant.id)+occupant.name+room.name
             concatenationbookingreference=concatenationbookingreference.upper().replace(" ", "")
             
@@ -743,6 +747,7 @@ def payment(id):
         form.size.data = occupant.size
         form.room.data = str(room.maxOccupancy )+ " in a room."
         form.phone.data = occupant.phone
+        form.price.data = room.price
         form.amount.data = min
         form.roomNumber.data = room.name
         form.roomlocation.data = occupant.location
@@ -753,12 +758,17 @@ def payment(id):
 
 
 def confirmPrestoPayment(transaction):
-    r = httpx.get(prestoUrl + '/verifykorbapayment/'+transaction.ref).json()
-    
-    print(r)
-    print("--------------status--------------")
-    status = r.get("status")
-    print(status)
+    status = None
+    try:
+        r = requests.get(prestoUrl + '/verifykorbapayment/'+transaction.ref).json()
+        
+        print(r)
+        print("--------------status--------------")
+        status = r.get("status")
+        print(status)
+    except Exception as e:
+        print(e)
+
 
     if status == 'success' or environment == 'DEV' and server == "FALSE":
 
