@@ -666,10 +666,10 @@ def payment(id):
     if request.method == 'POST':
         if form.validate_on_submit:
             print("validated")
-            # baseUrl = "https://pronto.prestoghana.com"
-            baseUrl = "http://192.168.8.105:4000"
-            paymentUrl = "http://192.168.8.100:5000"
-            # paymentUrl = "https://sandbox.prestoghana.com"
+            baseUrl = "https://pronto.prestoghana.com"
+            # baseUrl = "http://192.168.8.105:4000"
+            # paymentUrl = "http://192.168.8.100:5000"
+            paymentUrl = "https://sandbox.prestoghana.com"
 
             if form.amount.data == None:
                 form.amount.data = min
