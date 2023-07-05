@@ -175,9 +175,8 @@ class Ledger(db.Model):
 def __repr__(self): 
     return f"Ledger('{self.id}', Room('{self.roomnumber}', Paid- '{self.occupancyStatus}', )"
 
-
-
 prestoUrl = "https://prestoghana.com"
+environment = os.environ["ENVIRONMENT"]
 
 try:
     server = os.environ["SERVER"]
@@ -193,6 +192,7 @@ formatter = logging.Formatter(
     "[%(asctime)s] %(levelname)s in %(module)s: %(message)s"
 )
 
+
 if environment == "PROD":
     app.config['SQLALCHEMY_DATABASE_URI'] = prodDb
     # app.config['SQLALCHEMY_DATABASE_URI']= 'postgresql://fyjkuaetsygicd:1443f10e8d8247a6b0dd5463b8c80308359aab395be095e7a0b3c9b73553a46e@ec2-44-206-204-65.compute-1.amazonaws.com:5432/d8tbghkk0iam10'
@@ -204,7 +204,7 @@ else:
     app.config['SQLALCHEMY_DATABASE_URI'] = sandboxDb
     baseUrl = "https://pronto.prestoghana.com"
     if server == "TRUE":
-        log_file = '/var/www/log/prestovotes.log'
+        log_file = '/var/www/log/pronto.log'
         handler = RotatingFileHandler(log_file)
         handler.setFormatter(formatter)
     else:   
