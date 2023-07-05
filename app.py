@@ -15,6 +15,13 @@ import tempfile
 
 from sendsmsasync import send_bulk_sms
 
+<<<<<<< HEAD
+=======
+prodDb = "postgresql://postgres:adumatta@database-1.crebgu8kjb7o.eu-north-1.rds.amazonaws.com:5432/pronto"
+# sandboxDb = "sqlite:///test.db"
+sandboxDb = prodDb
+
+>>>>>>> 7562c534cec7a5d2ffd1c6fa4d254c2312f5c9a3
 app=Flask(__name__)
 app.config['SECRET_KEY'] = '5791628basdfsabca32242sdfsfde280ba245'
 app.config['SQLALCHEMY_DATABASE_URI']="postgresql://postgres:adumatta@database-1.crebgu8kjb7o.eu-north-1.rds.amazonaws.com:5432/pronto"
@@ -168,8 +175,12 @@ class Ledger(db.Model):
 def __repr__(self): 
     return f"Ledger('{self.id}', Room('{self.roomnumber}', Paid- '{self.occupancyStatus}', )"
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 7562c534cec7a5d2ffd1c6fa4d254c2312f5c9a3
 prestoUrl = "https://prestoghana.com"
+environment = os.environ["ENVIRONMENT"]
 
 try:
     server = os.environ["SERVER"]
@@ -178,6 +189,35 @@ except Exception as e:
     app.logger.error(e)
     server = "FALSE"
 
+<<<<<<< HEAD
+=======
+app.logger.setLevel(logging.INFO)
+
+
+formatter = logging.Formatter(
+    "[%(asctime)s] %(levelname)s in %(module)s: %(message)s"
+)
+
+
+if environment == "PROD":
+    app.config['SQLALCHEMY_DATABASE_URI'] = prodDb
+    # app.config['SQLALCHEMY_DATABASE_URI']= 'postgresql://fyjkuaetsygicd:1443f10e8d8247a6b0dd5463b8c80308359aab395be095e7a0b3c9b73553a46e@ec2-44-206-204-65.compute-1.amazonaws.com:5432/d8tbghkk0iam10'
+    baseUrl = "https://pronto.prestoghana.com"
+    log_file = '/var/www/log/pronto.log'
+    handler = RotatingFileHandler(log_file)
+    handler.setFormatter(formatter)
+else:
+    app.config['SQLALCHEMY_DATABASE_URI'] = sandboxDb
+    baseUrl = "https://pronto.prestoghana.com"
+    if server == "TRUE":
+        log_file = '/var/www/log/pronto.log'
+        handler = RotatingFileHandler(log_file)
+        handler.setFormatter(formatter)
+    else:   
+        handler = StreamHandler()
+        handler.setFormatter(formatter)
+
+>>>>>>> 7562c534cec7a5d2ffd1c6fa4d254c2312f5c9a3
 
 @app.route('/roomtype', methods=['GET', 'POST'])
 def roomtype():
