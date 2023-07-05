@@ -170,7 +170,7 @@ def __repr__(self):
 
 
 prestoUrl = "https://prestoghana.com"
-environment = os.environ["ENVIRONMENT"]
+
 try:
     server = os.environ["SERVER"]
 except Exception as e:
