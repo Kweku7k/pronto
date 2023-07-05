@@ -18,7 +18,8 @@ import tempfile
 from sendsmsasync import send_bulk_sms
 
 prodDb = "postgresql://postgres:adumatta@database-1.crebgu8kjb7o.eu-north-1.rds.amazonaws.com:5432/pronto"
-sandboxDb = "sqlite:///test.db"
+# sandboxDb = "sqlite:///test.db"
+sandboxDb = prodDb
 
 app=Flask(__name__)
 app.config['SECRET_KEY'] = '5791628basdfsabca32242sdfsfde280ba245'
