@@ -56,7 +56,7 @@ class PaymentForm(FlaskForm):
     name = StringField('Enter your Full Name', validators=[DataRequired()])
     id = IntegerField('Enter Student ID', validators=[DataRequired()])
     network = SelectField('Select your Network', choices=[("-Select a network provider-","-Select a network provider-"),("MTN","MTN"), ("VODAFONE","VODAFONE"), ("AIRTELTIGO","AIRTELTIGO")], validators=[DataRequired()])
-    amountPayable = IntegerField('Amount Due', validators=[DataRequired()])
+    amountPayable = IntegerField('Room Price', validators=[DataRequired()])
     amount = IntegerField('Enter how much you want to pay now', validators=[DataRequired()])
     price = IntegerField('Amount Due', validators=[DataRequired()])
     roomNumber = StringField('Room Number', validators=[DataRequired()])

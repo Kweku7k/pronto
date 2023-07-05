@@ -1,24 +1,19 @@
 import asyncio
-from logging import StreamHandler
-import logging
-from logging.handlers import RotatingFileHandler
 import os
 from flask import Flask, flash,redirect,url_for,render_template,request, session
+import urllib3
 from forms import *
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 import httpx
 import csv
-# import requests
+import requests
 import urllib.request, urllib.parse
 from datetime import datetime
 from werkzeug.utils import secure_filename
 import tempfile
 
 from sendsmsasync import send_bulk_sms
-
-prodDb = "postgresql://postgres:adumatta@database-1.crebgu8kjb7o.eu-north-1.rds.amazonaws.com:5432/pronto"
-sandboxDb = "sqlite:///test.db"
 
 app=Flask(__name__)
 app.config['SECRET_KEY'] = '5791628basdfsabca32242sdfsfde280ba245'
@@ -55,7 +50,6 @@ class Transactions(db.Model):
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
     amount = db.Column(db.Float)
     roomId = db.Column(db.Integer)
-    ref = db.Column(db.Integer)
     roomName = db.Column(db.String)
     roomBlock = db.Column(db.Integer)
     account = db.Column(db.String)
@@ -70,7 +64,7 @@ class Transactions(db.Model):
     pending = db.Column(db.Boolean, default=True)
     
     def __repr__(self):
-        return f"Transaction(': {self.id}', 'Amount:{self.amount}', 'Paid:{self.paid}')"
+        return f"Transaction(': {self.id}', 'Amount:{self.amount}', 'Candidate:{self.candidate}', 'Paid:{self.paid}')"
 
 
 class Room(db.Model):
@@ -157,7 +151,6 @@ class Occupant(db.Model):
     due = db.Column(db.Float(), nullable=True)
     paid = db.Column(db.Boolean(), default=False)
     status = db.Column(db.String(), nullable=True)
-    active = db.Column(db.Boolean(), default=False)
 
 class Ledger(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -176,7 +169,6 @@ def __repr__(self):
     return f"Ledger('{self.id}', Room('{self.roomnumber}', Paid- '{self.occupancyStatus}', )"
 
 
-
 prestoUrl = "https://prestoghana.com"
 
 try:
@@ -185,31 +177,6 @@ except Exception as e:
     app.logger.error("Couldnt find server!")
     app.logger.error(e)
     server = "FALSE"
-
-app.logger.setLevel(logging.INFO)
-
-
-formatter = logging.Formatter(
-    "[%(asctime)s] %(levelname)s in %(module)s: %(message)s"
-)
-
-if environment == "PROD":
-    app.config['SQLALCHEMY_DATABASE_URI'] = prodDb
-    # app.config['SQLALCHEMY_DATABASE_URI']= 'postgresql://fyjkuaetsygicd:1443f10e8d8247a6b0dd5463b8c80308359aab395be095e7a0b3c9b73553a46e@ec2-44-206-204-65.compute-1.amazonaws.com:5432/d8tbghkk0iam10'
-    baseUrl = "https://pronto.prestoghana.com"
-    log_file = '/var/www/log/pronto.log'
-    handler = RotatingFileHandler(log_file)
-    handler.setFormatter(formatter)
-else:
-    app.config['SQLALCHEMY_DATABASE_URI'] = sandboxDb
-    baseUrl = "https://pronto.prestoghana.com"
-    if server == "TRUE":
-        log_file = '/var/www/log/prestovotes.log'
-        handler = RotatingFileHandler(log_file)
-        handler.setFormatter(formatter)
-    else:   
-        handler = StreamHandler()
-        handler.setFormatter(formatter)
 
 
 @app.route('/roomtype', methods=['GET', 'POST'])
@@ -263,7 +230,7 @@ def roomselector(id):
     room = session["room"]
 # location=location, maxOccupancy=room, size=size
     # allrooms = Room.query.filter_by(block=block).order_by(Room.number.asc()).all()
-    allrooms = RoomConfig.query.filter_by(vacant=True, location=location, size=size, maxOccupancy=room).all()
+    allrooms = RoomConfig.query.filter_by(vacant=True, location=location, size=size, bedsAvailable=room).all()
     # allrooms = Room.query.all()
     print(allrooms)
     return render_template('rooms.html', rooms=allrooms, block=block)
@@ -343,7 +310,7 @@ def sendsms(phone,message):
         "hasPlaceholders": False,
         "senderId": "Pronto"
     }
-    r = httpx.post(url, json=message)
+    r = requests.post(url, json=message)
     print(r.text)
     return r.text
 
@@ -374,7 +341,7 @@ def pronto():
 
             print(session)
 
-            sendTelegram("New Occupant Created!: \nOccupant: " + str(newOccupant.id )+". "+newOccupant.name + "\nStudentId: " + newOccupant.studentId + "\nCourse: " + newOccupant.course + "\nLevel: " + newOccupant.level + "\nStatus: " + str(newOccupant.active)  + "\nRoomData:\n"+ str(form.roomlocation.data) + "\n" +str(form.room.data) + "in a room \n" + str(form.size.data))
+            sendTelegram("New Occupant Created!: \nOccupant: " + str(newOccupant.id )+". "+newOccupant.name + "\nStudentId: " + newOccupant.studentId + "\nCourse: " + newOccupant.course + "\nLevel: " + newOccupant.level )
         
             return redirect(url_for('roomselector', id=newOccupant.id))
         
@@ -546,7 +513,7 @@ def upload_csv(field):
                     csvData.append(row)
                     print(row["price"])
                     price = row["price"]
-                    # price = float(price)
+                    float(price)
 
                     newRoomConfig = RoomConfig(name=row["Block/Room"], code=row["code"], bedsTaken=row["bedsTaken"], block=row["block"], number=row["room"], bedsAvailable=row["bedsRemaining"], location=row["roomLocation"], maxOccupancy = row["bedsAvailable"], size=row["size"], price=price )
                     db.session.add(newRoomConfig)
@@ -682,7 +649,8 @@ def payment(id):
     room = RoomConfig.query.get_or_404(id)
     form.roomNumber.data = room.name
     occupant = Occupant.query.get_or_404(session['occupantId'])
-    min = float(room.price)*0.75
+    #min = float(room.price)*0.75
+    min = 500
     max = float(room.price)
 
 
@@ -698,19 +666,15 @@ def payment(id):
     if request.method == 'POST':
         if form.validate_on_submit:
             print("validated")
-            baseUrl = "https://pronto.prestoghana.com"
-            # baseUrl = "http://192.168.8.105:4000"
-            # paymentUrl = "http://192.168.8.100:5000"
+            baseUrl = "https://sandbox.prestoghana.com"
             paymentUrl = "https://sandbox.prestoghana.com"
 
             if form.amount.data == None:
                 form.amount.data = min
                 # name, occupantid, roomid, indexnumber
 
-            occupant.active = True
-
             concatenationbookingreference = str(occupant.id)+occupant.name+room.name
-            concatenationbookingreference=concatenationbookingreference.upper().replace(" ", "")
+            concatenationbookingreference=concatenationbookingreference.upper()
             
             transaction = Transactions(
                 occupantId = occupant.id,
@@ -730,9 +694,7 @@ def payment(id):
             except Exception as e:
                 sendTelegram("Couldnt create transaction!!! FOLLOW UP IN LOGS.")
             
-            callback_url = baseUrl+"/confirm/"+str(transaction.id)
-            
-            return redirect(paymentUrl+'/pay/prontohostel?amount='+str(form.amount.data)+'&name='+form.name.data+'&reference='+concatenationbookingreference+'&callback_url='+callback_url+'&recipient=external')
+            return redirect(paymentUrl+'/pay/prontohostel?amount='+str(form.amount.data)+'&name='+form.name.data+'&reference='+concatenationbookingreference)
 
         # handle transactions here.
 
@@ -779,7 +741,6 @@ def payment(id):
         form.size.data = occupant.size
         form.room.data = str(room.maxOccupancy )+ " in a room."
         form.phone.data = occupant.phone
-        form.price.data = room.price
         form.amount.data = min
         form.roomNumber.data = room.name
         form.roomlocation.data = occupant.location
@@ -790,17 +751,12 @@ def payment(id):
 
 
 def confirmPrestoPayment(transaction):
-    status = None
-    try:
-        r = requests.get(prestoUrl + '/verifykorbapayment/'+transaction.ref).json()
-        
-        print(r)
-        print("--------------status--------------")
-        status = r.get("status")
-        print(status)
-    except Exception as e:
-        print(e)
-
+    r = requests.get(prestoUrl + '/verifykorbapayment/'+transaction.ref).json()
+    
+    print(r)
+    print("--------------status--------------")
+    status = r.get("status")
+    print(status)
 
     if status == 'success' or environment == 'DEV' and server == "FALSE":
 
@@ -809,7 +765,7 @@ def confirmPrestoPayment(transaction):
         # findtrasaction, again because of the lag.
         state = Transactions.query.get_or_404(transaction.id)
         if state.paid != True:
-            try: #TODO: fix this!
+            try:
                 state.paid = True
                 state.pending = False
                 db.session.commit()
@@ -869,30 +825,13 @@ def createLedgerCredit(transaction):
 
 @app.route('/confirm/<string:transactionId>', methods=['GET', 'POST'])
 def confirm(transactionId):
-
-    print("Attempting to confirm transaction: \n TransactionId: " + transactionId)
     message = "In Progress"
 
     transaction = Transactions.query.get_or_404(transactionId)
-    print("Transaction")
-    print(transaction)
-
     occupant = Occupant.query.get_or_404(transaction.occupantId)
-    print("occupant")
-    print(occupant)
-
     room = RoomConfig.query.get_or_404(transaction.roomId)
-    print("room")
-    print(room)
-
-    try:
-        transaction.ref = request.args.get("ref")
-        db.session.commit()
-    except Exception as e:
-        print(e)
-        print("Error in Confirming Transaction:")
-
-    # print("Attempting to confirm transaction: \n TransactionId: " + transaction.id + "\nOccupant: " + occupant.id + ". " + occupant.name + "\nRoom: "+ room.name)
+    
+    print("Attempting to confirm transaction: \n TransactionId: " + transaction.id + "\nOccupant: " + occupant.id + ". " + occupant.name + "\nRoom: "+ room.name)
 
     if transaction.paid == False:
         message = "Failed Transaction"
@@ -902,11 +841,7 @@ def confirm(transactionId):
             # CREATE A CREDIT TO AN OCCUPANT.
             credit = createLedgerCredit(transaction)
             if credit != None: #If a credit was already created
-                # find occupant
-                print("occupant")
-                occupant = Occupant.query.get_or_404(occupant.id)
-                print(occupant)
-                updateOccupant(transaction.amount, occupant, "paid")
+                updateOccupant(transaction.amount, transaction.occupantId, "paid")
             else:
                 app.logger.error("Transaction: " + str(transaction.id) + " was attempting to be recreated.")
         else:
@@ -925,7 +860,7 @@ def confirm(transactionId):
 
 @app.route('/reserve/<int:id>', methods=['GET', 'POST'])
 def reserve(id):
-    occupant = Occupant.query.get_or_404(id)
+    occupant = Occupant.query.get(id)
     occupant.status = "reserved"
     db.session.commit()
 
@@ -938,27 +873,22 @@ def reserve(id):
 # confirm route!
 # if transaction is paid once!
 def updateOccupant(amount, occupant, action="paid"):
-    print(occupant)
     amountBalance = occupant.roomCost - float(amount) #6000 - 3000 = 3000
     
-
-    print("Updating Blocks")
     # update block 
-    # block = Blocks.query.get_or_404(occupant.block) #find Block
-    # print(block)
-    # block.paid += amount #Update amount paid per block
+    block = Blocks.query.get_or_404(occupant.block) #find Block
+    block.paid += amount #Update amount paid per block
 
-    print("Updating Blocks")
     # Current balance + amount paid
     occupant.amountPaid += amount
     occupant.due = amountBalance #wrong
     outstanding = occupant.roomCost - amount
     
-    # block.due += occupant.roomCost
-    # block.outstanding += outstanding
+    block.due += occupant.roomCost
+    block.outstanding += outstanding
 
     # set room to hidden if full
-    room = RoomConfig.query.get_or_404(occupant.roomid)
+    room =  RoomConfig.query.get_or_404(occupant.roomid)
     room.bedsTaken += 1
     room.bedsAvailable -= 1
     
@@ -968,18 +898,13 @@ def updateOccupant(amount, occupant, action="paid"):
         message = "You have successfully reserved "+ str(room.name) +". Please make a payment of no less than GHS 1000 by the 30th of July 2023 to confirm your reservation."
         sendTelegram("RESERVATION: \nBlock " + str(room.block)+ " Room " + str(room.number) + "has been "+ action +" successfully by "+ str(occupant.name)+ " " + str(occupant.phone)+ ".\nAmount Paid "+ str(amount) + "\nRemaining Beds: "+ str(room.bedsAvailable))
     
-    elif action == "purchase" or action == "paid":
-        message = "Receipt Number:" + occupant.phone + "\n Date: "+ datetime.utcnow().strftime('%c') + "\nGuest Name:" + occupant.name + "\nBooking Reference: " + "transaction" + "\nPayment Method: " + "paymentMethod" + "\nReview occupancy terms and conditions here. \nDial *192*456*908# and use your booking reference to make future payments during your occupancy term. \nThank you for choosing Pronto Hostels. We hope you have a great stay with us!"
+    elif action == "purchase":
+        message = "Receipt Number:" + occupant.phone + "\n Date: "+ datetime.utcnow().strftime('%c') + "\nGuest Name:" + occupant.name + "\nBooking Reference: " + transaction + "\nPayment Method: " + paymentMethod + "\nReview occupancy terms and conditions here. \nDial *192*456*908# and use your booking reference to make future payments during your occupancy term. \nThank you for choosing Pronto Hostels. We hope you have a great stay with us!"
 
         sendTelegram("PURCHASE: \nBlock " + str(room.block)+ " Room " + str(room.number) + "has been "+ action +" successfully by "+ str(occupant.name)+ " " + str(occupant.phone)+ ".\nAmount Paid "+ str(amount) + "\nRemaining Beds: "+ str(room.bedsAvailable))
     
     # TRY CATCH FOR EACH!
-    try:
-        print("Attempting to fire sms")
-        send_sms(occupant.phone, message, "Pronto")
-    except Exception as e:
-        print("Couldnt fire sms")
-        print(e)
+    sendsms(occupant.phone, message)
     # sendTelegram("Block " + str(room.block)+ " Room " + str(room.number) + "has been "+ action +" successfully by "+ str(occupant.name)+ " " + str(occupant.phone)+ ".\nAmount Paid "+ str(amount) + "\nRemaining Beds: "+ str(room.bedsAvailable))
 
     if room.bedsAvailable <= 0:
@@ -1065,19 +990,15 @@ def master():
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
-    app.logger.info("Session is being cleared")
-    print("Session is being cleared")
-    session.clear()
-    print(session)
+
     return render_template('home.html')
 
 @app.route('/details', methods=['GET', 'POST'])
 def details():
-    form = DetailsForm()
-    if form.validate_on_submit():
+    form=DetailsForm()
+    if request.method=='POST':
         # Handle POST Request here
-        return redirect(url_for('form'))  # Redirect to the 'new_route' function
-    
+        return render_template('details.html')
     return render_template('details.html', form=form)
 
 @app.route('/viewrooms', methods=['GET', 'POST'])
@@ -1119,4 +1040,4 @@ def sendTelegram(params):
 
 if __name__ == '__main__':
     #DEBUG is SET to TRUE. CHANGE FOR PROD
-    app.run(port=4000, host='0.0.0.0', debug=True)
+    app.run(port=5000, host='0.0.0.0', debug=True)
