@@ -35,7 +35,10 @@ Block 1 Room 33,0,1,33,4,Second Floor,4-in-a-room,Small,Second Floor 4-in-a-room
 Block 1 Room 34,4,1,34,4,Second Floor,4-in-a-room,Small,Second Floor 4-in-a-room Small,FULLY BOOKED,0,2750
 Block 1 Room 35,0,1,35,4,Second Floor,4-in-a-room,Small,Second Floor 4-in-a-room Small,VACANCY,4,2750
 Block 1 Room 36,2,1,36,2,Terrace,2-in-a-room,Small,Terrace 2-in-a-room Small,FULLY BOOKED,0,5800
+<<<<<<< HEAD
 ,,,,,,,,,,,
+=======
+>>>>>>> 61662a25686c067888f451a85fde17ab9055f68a
 Block 2 Room 1,1,2,1,2,Terrace,2-in-a-room,Small,Terrace 2-in-a-room Small,VACANCY,1,5800
 Block 2 Room 2,0,2,2,4,Ground Floor,4-in-a-room,Small,Ground Floor 4-in-a-room Small,VACANCY,4,2750
 Block 2 Room 3,0,2,3,2,Ground Floor,2-in-a-room,Small,Ground Floor 2-in-a-room Small,VACANCY,2,5500
@@ -72,7 +75,10 @@ Block 2 Room 33,0,2,33,2,Second Floor,2-in-a-room,Small,Second Floor 2-in-a-room
 Block 2 Room 34,2,2,34,2,Second Floor,2-in-a-room,Small,Second Floor 2-in-a-room Small,FULLY BOOKED,0,5500
 Block 2 Room 35,0,2,35,2,Second Floor,2-in-a-room,Small,Second Floor 2-in-a-room Small,VACANCY,2,5500
 Block 2 Room 36,0,2,36,3,Terrace,3-in-a-room,Small,Terrace 3-in-a-room Small,VACANCY,3,3870
+<<<<<<< HEAD
 ,,,,,,,,,,,
+=======
+>>>>>>> 61662a25686c067888f451a85fde17ab9055f68a
 Block 3 Room 1,3,3,1,4,Terrace,4-in-a-room,Small,Terrace 4-in-a-room Small,VACANCY,1,2900
 Block 3 Room 2,0,3,2,4,Ground Floor,4-in-a-room,Small,Ground Floor 4-in-a-room Small,VACANCY,4,2750
 Block 3 Room 3,2,3,3,2,Ground Floor,2-in-a-room,Small,Ground Floor 2-in-a-room Small,FULLY BOOKED,0,5500
@@ -109,7 +115,10 @@ Block 3 Room 33,0,3,33,2,Second Floor,2-in-a-room,Small,Second Floor 2-in-a-room
 Block 3 Room 34,0,3,34,2,Second Floor,2-in-a-room,Small,Second Floor 2-in-a-room Small,VACANCY,2,5500
 Block 3 Room 35,1,3,35,2,Second Floor,2-in-a-room,Small,Second Floor 2-in-a-room Small,VACANCY,1,5500
 Block 3 Room 36,0,3,36,2,Terrace,2-in-a-room,Small,Terrace 2-in-a-room Small,VACANCY,2,5800
+<<<<<<< HEAD
 ,,,,,,,,,,,
+=======
+>>>>>>> 61662a25686c067888f451a85fde17ab9055f68a
 Block 4 Room 1,4,4,1,4,Terrace,4-in-a-room,Small,Terrace 4-in-a-room Small,FULLY BOOKED,0,2900
 Block 4 Room 2,0,4,2,4,Ground Floor,4-in-a-room,Small,Ground Floor 4-in-a-room Small,VACANCY,4,2750
 Block 4 Room 3,3,4,3,4,Ground Floor,4-in-a-room,Small,Ground Floor 4-in-a-room Small,VACANCY,1,2750
@@ -146,7 +155,10 @@ Block 4 Room 33,0,4,33,2,Second Floor,2-in-a-room,Small,Second Floor 2-in-a-room
 Block 4 Room 34,0,4,34,2,Second Floor,2-in-a-room,Small,Second Floor 2-in-a-room Small,VACANCY,2,5500
 Block 4 Room 35,0,4,35,2,Second Floor,2-in-a-room,Small,Second Floor 2-in-a-room Small,VACANCY,2,5500
 Block 4 Room 36,1,4,36,3,Terrace,3-in-a-room,Small,Terrace 3-in-a-room Small,VACANCY,2,3870
+<<<<<<< HEAD
 ,,,,,,,,,,,
+=======
+>>>>>>> 61662a25686c067888f451a85fde17ab9055f68a
 Block 5 Room 1,3,5,1,3,Terrace,3-in-a-room,Large,Terrace 3-in-a-room Large,FULLY BOOKED,0,4200
 Block 5 Room 2,0,5,2,4,Ground Floor,4-in-a-room,Large,Ground Floor 4-in-a-room Large,VACANCY,4,3000
 Block 5 Room 3,1,5,3,2,Ground Floor,2-in-a-room,Large,Ground Floor 2-in-a-room Large,VACANCY,1,6000
@@ -183,7 +195,10 @@ Block 5 Room 33,0,5,33,3,Second Floor,3-in-a-room,Large,Second Floor 3-in-a-room
 Block 5 Room 34,1,5,34,3,Second Floor,3-in-a-room,Large,Second Floor 3-in-a-room Large,VACANCY,2,4000
 Block 5 Room 35,0,5,35,4,Second Floor,4-in-a-room,Large,Second Floor 4-in-a-room Large,VACANCY,4,3000
 Block 5 Room 36,1,5,36,2,Terrace,2-in-a-room,Large,Terrace 2-in-a-room Large,VACANCY,1,6200
+<<<<<<< HEAD
 ,,,,,,,,,,,
+=======
+>>>>>>> 61662a25686c067888f451a85fde17ab9055f68a
 Block 6 Room 1,3,6,1,3,Terrace,3-in-a-room,Large,Terrace 3-in-a-room Large,FULLY BOOKED,0,4200
 Block 6 Room 2,1,6,2,4,Ground Floor,4-in-a-room,Large,Ground Floor 4-in-a-room Large,VACANCY,3,3000
 Block 6 Room 3,3,6,3,3,Ground Floor,3-in-a-room,Large,Ground Floor 3-in-a-room Large,FULLY BOOKED,0,4000

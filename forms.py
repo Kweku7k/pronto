@@ -34,7 +34,7 @@ class Booking(FlaskForm):
     checkin = DateField('Check in Date', format='%Y-%m-%d')
     # special = SelectField('Special Request or Need', choices=[("-Select-", "-Select-"),("Top Bed", "Top Bed"), ("Down Bed", "Down Bed")])
 
-    submit = SubmitField('Choose a room')
+    submit = SubmitField('Make Payment')
 
 class NewRegistration(FlaskForm):
     firstname = StringField('Enter First Name', validators=[DataRequired()])
@@ -58,6 +58,7 @@ class PaymentForm(FlaskForm):
     network = SelectField('Select your Network', choices=[("-Select a network provider-","-Select a network provider-"),("MTN","MTN"), ("VODAFONE","VODAFONE"), ("AIRTELTIGO","AIRTELTIGO")], validators=[DataRequired()])
     amountPayable = IntegerField('Amount Due', validators=[DataRequired()])
     amount = IntegerField('Enter how much you want to pay now', validators=[DataRequired()])
+    price = IntegerField('Amount Due', validators=[DataRequired()])
     roomNumber = StringField('Room Number', validators=[DataRequired()])
     phone = StringField('Enter Phone Number', validators=[DataRequired()])
     roomlocation = SelectField('Room Location', choices=[("-Select a room location-", "-Select a room location-"),("Terrace", "Terrace"),("Ground Floor", "Ground Floor"), ("First Floor", "First Floor"), ("Second Floor", "Second Floor")], validators=[DataRequired()])
